@@ -15,6 +15,8 @@ A casual hobby repo built purely for entertainment. No deadlines, no pressure—
 3. Run it... eventually? `npm start` or equivalent (if added)
 
 ## Tech Stack
+
+### Programing
 ```
   Node.js 🤪 - React.js 🤔 maybe
     ↓
