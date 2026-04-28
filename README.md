@@ -1,4 +1,4 @@
-# Your Fun Side Project 😂🎉
+# My Fun Side Project 😂🎉
 
 > **This is just a fun side project 😂🎉, so it might get finished—or not—depending on my mood 😎🫤💤.**
 
@@ -11,7 +11,7 @@ A casual hobby repo built purely for entertainment. No deadlines, no pressure—
 
 ## Getting Started
 1. Clone the repo: `git clone https://github.com/akarui2004/funny-project-001.git`
-2. `cd your-repo`
+2. `cd funny-project-001`
 3. Run it... eventually? `npm start` or equivalent (if added)
 
 ## Tech Stack
