@@ -15,7 +15,17 @@ A casual hobby repo built purely for entertainment. No deadlines, no pressure—
 3. Run it... eventually? `npm start` or equivalent (if added)
 
 ## Tech Stack
-- Whatever feels right that day 🚀
+```
+  Node.js 🤪 - React.js 🤔 maybe
+    ↓
+  NOT Go 🚫 - Rust 🦀 a bit maybe
+    ↓
+  PHP 💀 maybe - Legacy Ruby 🤪💎
+    ↓
+  C# 🤣 lol 👊 👊 👊 Perl 🐪🐪
+    ↓
+  🐍 Python last but not least 🥴🥴🥴
+```
 
 ## Contributing
 Pull requests welcome if you're in the mood too! Fork away 🎊.
