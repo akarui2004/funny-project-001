@@ -1,0 +1,4 @@
+# Ignore the config files for production, staging, and development environments
+config/production.toml
+config/staging.toml
+config/development.toml
