@@ -12,8 +12,9 @@ import fs from "fs";
 import path from "path";
 import { Defaults } from "src/constants";
 import toml from "toml";
+import { RootConfig, RootConfigSchema } from "./schema";
 
-const loadConfig = (configFile: string) => {
+const loadConfig = (configFile: string): RootConfig => {
   const configFilePath = path.resolve(Defaults.CONFIG_FOLDER, configFile);
   if (!fs.existsSync(configFilePath)) {
     throw new Error(`Configuration file not found: ${configFilePath}`);
@@ -22,13 +23,17 @@ const loadConfig = (configFile: string) => {
   const fileContent = fs.readFileSync(configFilePath, "utf-8");
   const parsedConfig = toml.parse(fileContent);
 
-  // Here you would typically merge with environment-specific configs and validate with Zod
-  // For simplicity, we just return the parsed config
-  return parsedConfig;
+  const result = RootConfigSchema.safeParse(parsedConfig);
+  if (!result.success) {
+    throw new Error(`Configuration validation error: ${result.error.message}`);
+  }
+
+  return result.data;
 };
 
 (async () => {
   const loadedConfig = loadConfig("base.toml");
+  console.log(loadedConfig.datasources.default);
 })().catch((error) => {
   console.error("Error loading configuration:", error);
   process.exit(1);
