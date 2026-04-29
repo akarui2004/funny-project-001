@@ -4,6 +4,11 @@
   "description": "This is just a project for fun",
   "main": "src/server.ts",
   "license": "MIT",
+  "nodemonConfig": {
+    "watch": ["src"],
+    "ext": "ts,toml",
+    "ignore": ["dist/**", "logs/**", "scripts/**"]
+  },
   "dependencies": {
     "cors": "^2.8.6",
     "decimal.js": "^10.6.0",
