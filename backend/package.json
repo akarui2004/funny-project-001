@@ -5,14 +5,19 @@
   "main": "src/server.ts",
   "license": "MIT",
   "nodemonConfig": {
-    "watch": ["src"],
+    "watch": [
+      "src"
+    ],
     "ext": "ts,toml",
-    "ignore": ["dist/**", "logs/**", "scripts/**"]
+    "ignore": [
+      "dist/**",
+      "logs/**",
+      "scripts/**"
+    ]
   },
   "dependencies": {
     "cors": "^2.8.6",
     "decimal.js": "^10.6.0",
-    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.4.1",
     "helmet": "^8.1.0",
