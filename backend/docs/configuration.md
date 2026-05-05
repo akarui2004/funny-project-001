@@ -8,6 +8,7 @@ This document describes the configuration options available in `base.toml`.
 |---------|-------------|
 | `[env]` | Server environment settings |
 | `[datasources]` | Database connection configuration |
+| `[redis]` | Redis connection configuration |
 
 ---
 
@@ -63,6 +64,38 @@ Additional connection options.
 
 ---
 
+## [redis]
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `source` | string | `"main"` | The name of the default Redis instance to be used by the application. |
+
+---
+
+## [redis.\<name\>]
+
+Supports multiple Redis instances. Each instance has its own section (e.g., `[redis.main]`, `[redis.queue]`).
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `host` | string | `"localhost"` | The host name or IP address of the Redis server. |
+| `port` | number | `6379` | The port number on which the Redis server is listening. |
+| `keyPrefix` | string | `""` | The key prefix for all Redis keys (e.g., `"fp-api:"`). |
+| `db` | number | `0` | The Redis database number (0-15). |
+
+### [redis.\<name\>.options]
+
+Connection options for Redis.
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `connectTimeout` | number | `5000` | The maximum time (ms) to wait for a connection. |
+| `keepAlive` | number | `5000` | Idle connection timeout (ms). |
+| `enableReadyCheck` | boolean | `true` | Check connection readiness before commands. |
+| `maxRetriesPerRequest` | number | `3` | Number of retries for a failed command. |
+
+---
+
 ## Usage
 
 1. Copy `config/base.toml` to `config/local.toml` or `config/production.toml`
@@ -85,6 +118,21 @@ Additional connection options.
     port = 5432
     username = "dev"
     password = "dev"
+
+[redis]
+  source = "main"
+
+  [redis.main]
+    host = "localhost"
+    port = 6379
+    keyPrefix = "fp-dev:"
+    db = 0
+
+    [redis.main.options]
+      connectTimeout = 5000
+      keepAlive = 5000
+      enableReadyCheck = true
+      maxRetriesPerRequest = 3
 ```
 
 ### Production
@@ -105,4 +153,18 @@ Additional connection options.
     [datasources.default.options]
       ssl = true
       connectTimeout = 30000
+
+[redis]
+  source = "main"
+
+  [redis.main]
+    host = "redis.production.internal"
+    port = 6379
+    keyPrefix = "fp-prod:"
+    db = 0
+
+    [redis.main.options]
+      connectTimeout = 10000
+      enableReadyCheck = true
+      maxRetriesPerRequest = 3
 ```

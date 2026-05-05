@@ -22,3 +22,26 @@
     [datasources.default.options]
       ssl = false
       connectTimeout = 60000
+
+[redis]
+  source = "main"
+
+  [redis.main]
+    host = "localhost"
+    port = 6379
+    keyPrefix = "fp-api:"
+    db = 0
+    [redis.main.options]
+      connectTimeout = 5000
+      keepAlive = 5000
+      enableReadyCheck = true
+      maxRetriesPerRequest = 3
+
+  [redis.queue]
+    host = "localhost"
+    port = 6379
+    keyPrefix = "fp-queue:"
+    db = 1
+    [redis.queue.options]
+      connectTimeout = 5000
+      maxRetriesPerRequest = 3
