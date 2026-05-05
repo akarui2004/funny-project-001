@@ -1,23 +1,24 @@
 [env]
-  port = 3000
+  listen_port = 3000
 
-[datasources.default]
-  name              = 'default-db'
-  username          = ''
-  password          = ''
-  schema            = 'funny-project'
-  [datasources.default.options]
-    host            = 'localhost'
-    port            = 5432
-    timezone        = '+07:00'
-    dialect         = 'postgres'
-    maxConnections  = 20
+[datasources]
+  source = "default"
 
-[redis.main]
-  host      = 'localhost'
-  port      = 6379
-  keyPrefix = 'fnp-api:'
-  db        = 0
+  [datasources.default]
+    dialect = "postgresql"
+    host = "localhost"
+    port = 5432
+    schema = "public"
+    database = "funny_project"
+    username = ""
+    password = ""
 
-[cache]
-  ttl       = 86400 # 24 hours in seconds
+    [datasources.default.pool]
+      max = 10
+      min = 0
+      acquire = 30000
+      idle = 10000
+
+    [datasources.default.options]
+      ssl = false
+      connectTimeout = 60000
