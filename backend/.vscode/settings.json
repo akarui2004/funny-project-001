@@ -1,3 +1,13 @@
 {
-  "js/ts.tsdk.path": "node_modules/typescript/lib" // Use the TypeScript version installed in the project
+  "js/ts.tsdk.path": "node_modules/typescript/lib",
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "prettier.singleQuote": true,
+  "prettier.requireConfig": true
 }
