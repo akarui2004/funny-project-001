@@ -1,11 +1,11 @@
 [env]
-  listen_port = 3000
+  listenPort = 3000
 
 [datasources]
   source = "default"
 
   [datasources.default]
-    dialect = "postgresql"
+    dialect = "postgres"
     host = "localhost"
     port = 5432
     schema = "public"

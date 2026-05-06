@@ -16,7 +16,7 @@ This document describes the configuration options available in `base.toml`.
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `listen_port` | number | `3000` | The port number on which the server will listen for incoming requests. |
+| `listenPort` | number | `3000` | The port number on which the server will listen for incoming requests. |
 
 ---
 
