@@ -61,7 +61,7 @@ class Datasource {
 }
 
 const datasource = {
-  authenticate: async () => await Datasource.getInstance().authenticate(),
+  init: async () => await Datasource.getInstance().authenticate(),
   setSource: (source: string) => Datasource.getInstance().setSource(source)
 };
 
