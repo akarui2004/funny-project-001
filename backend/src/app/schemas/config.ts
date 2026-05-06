@@ -29,7 +29,7 @@ const DSSchema = z.object({
 });
 
 const ConfigDatasourceSchema = z.object({
-  source: z.string().default('default'),
+  source: z.enum(['default', 'replica']).default('default'),
   default: DSSchema.optional()
 });
 
@@ -56,7 +56,7 @@ const ConfigRedisSchema = z.object({
 
 const BaseConfigSchema = z.object({
   env: ConfigEnvSchema.optional(),
-  datasource: ConfigDatasourceSchema.optional(),
+  datasources: ConfigDatasourceSchema.optional(),
   redis: ConfigRedisSchema.optional()
 });
 
@@ -64,10 +64,6 @@ export type BaseConfig = z.infer<typeof BaseConfigSchema>;
 export type ConfigEnv = z.infer<typeof ConfigEnvSchema>;
 export type ConfigDatasource = z.infer<typeof ConfigDatasourceSchema>;
 export type ConfigRedis = z.infer<typeof ConfigRedisSchema>;
+export type DSSchemaType = z.infer<typeof DSSchema>;
 
-export {
-  BaseConfigSchema,
-  ConfigEnvSchema,
-  ConfigDatasourceSchema,
-  ConfigRedisSchema
-};
+export { BaseConfigSchema, ConfigEnvSchema, ConfigDatasourceSchema, ConfigRedisSchema };
