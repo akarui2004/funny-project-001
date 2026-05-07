@@ -1,6 +1,7 @@
 import { Options, Sequelize } from 'sequelize';
 import appConfig from '../config';
 import { DSSchemaType } from '../schemas';
+import appUtils from '../utils';
 
 class Datasource {
   static #instance: Datasource;
@@ -26,9 +27,9 @@ class Datasource {
 
     try {
       await sequelizeInstance.authenticate();
-      console.log(`Connection to datasource "${this.defaultSource}" has been established successfully.`);
+      appUtils.logger.info(`Connection to datasource "${this.defaultSource}" has been established successfully.`);
     } catch (error) {
-      console.error(`Unable to connect to the datasource "${this.defaultSource}":`, error);
+      appUtils.logger.error(`Unable to connect to the datasource "${this.defaultSource}":`, { error });
       throw error; // Rethrow the error after logging
     }
   }
