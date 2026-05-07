@@ -1,23 +1,60 @@
 [env]
-  port = 3000
+  listenPort = 3000
 
-[datasources.default]
-  name              = 'default-db'
-  username          = ''
-  password          = ''
-  schema            = 'funny-project'
-  [datasources.default.options]
-    host            = 'localhost'
-    port            = 5432
-    timezone        = '+07:00'
-    dialect         = 'postgres'
-    maxConnections  = 20
+[datasources]
+  source = "default"
 
-[redis.main]
-  host      = 'localhost'
-  port      = 6379
-  keyPrefix = 'fnp-api:'
-  db        = 0
+  [datasources.default]
+    dialect = "postgres"
+    host = "localhost"
+    port = 5432
+    schema = "public"
+    database = "funny_project"
+    username = ""
+    password = ""
 
-[cache]
-  ttl       = 86400 # 24 hours in seconds
+    [datasources.default.pool]
+      max = 10
+      min = 0
+      acquire = 30000
+      idle = 10000
+
+    [datasources.default.options]
+      ssl = false
+      connectTimeout = 60000
+
+[redis]
+  source = "main"
+
+  [redis.main]
+    host = "localhost"
+    port = 6379
+    keyPrefix = "fp-api:"
+    db = 0
+    [redis.main.options]
+      connectTimeout = 5000
+      keepAlive = 5000
+      enableReadyCheck = true
+      maxRetriesPerRequest = 3
+
+  [redis.queue]
+    host = "localhost"
+    port = 6379
+    keyPrefix = "fp-queue:"
+    db = 1
+    [redis.queue.options]
+      connectTimeout = 5000
+      maxRetriesPerRequest = 3
+
+[logging]
+  path = "logs"
+  baseFileName = "app"
+  level = "info"
+
+  [logging.rotate]
+    frequency = "daily" # The amount of time a given log file is used
+    mkdir = true # Auto create folder if it doesn't exist
+    size = "100m" # Maximum size of a single log file before rotation
+    [logging.rotate.limit]
+      count = 30 # keep last 30 files
+      removeOtherLogFile = true # When true, will remove files not created by the current process.

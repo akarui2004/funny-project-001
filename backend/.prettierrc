@@ -1,0 +1,6 @@
+{
+  "singleQuote": true,
+  "quoteProps": "as-needed",
+  "trailingComma": "none",
+  "printWidth": 240
+}
