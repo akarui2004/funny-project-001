@@ -9,6 +9,7 @@ This document describes the configuration options available in `base.toml`.
 | `[env]` | Server environment settings |
 | `[datasources]` | Database connection configuration |
 | `[redis]` | Redis connection configuration |
+| `[logging]` | Logging configuration |
 
 ---
 
@@ -93,6 +94,35 @@ Connection options for Redis.
 | `keepAlive` | number | `5000` | Idle connection timeout (ms). |
 | `enableReadyCheck` | boolean | `true` | Check connection readiness before commands. |
 | `maxRetriesPerRequest` | number | `3` | Number of retries for a failed command. |
+
+---
+
+## [logging]
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `path` | string | `"logs"` | The directory where log files will be stored. |
+| `baseFileName` | string | `"app"` | The base name for log files. |
+| `level` | string | `"info"` | The default log level (`trace`, `debug`, `info`, `warn`, `error`, `fatal`). |
+
+### [logging.rotate]
+
+Log rotation settings.
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `frequency` | string | `"daily"` | How often to rotate log files (`daily`, `hourly`). |
+| `mkdir` | boolean | `true` | Whether to automatically create the log directory if it doesn't exist. |
+| `size` | string | `"100m"` | Maximum size of a log file before rotation (e.g., `"100m"`, `"1g"`). |
+
+### [logging.rotate.limit]
+
+Limits for log file retention.
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `count` | number | `30` | Maximum number of log files to keep. |
+| `removeOtherLogFile` | boolean | `true` | Whether to remove log files not created by the current process. |
 
 ---
 

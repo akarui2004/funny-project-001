@@ -45,3 +45,16 @@
     [redis.queue.options]
       connectTimeout = 5000
       maxRetriesPerRequest = 3
+
+[logging]
+  path = "logs"
+  baseFileName = "app"
+  level = "info"
+
+  [logging.rotate]
+    frequency = "daily" # The amount of time a given log file is used
+    mkdir = true # Auto create folder if it doesn't exist
+    size = "100m" # Maximum size of a single log file before rotation
+    [logging.rotate.limit]
+      count = 30 # keep last 30 files
+      removeOtherLogFile = true # When true, will remove files not created by the current process.

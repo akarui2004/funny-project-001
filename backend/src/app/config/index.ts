@@ -72,7 +72,6 @@ class ConfigLoader {
       const data = toml.parse(content);
       return { file: fileName, data };
     } catch (error: any) {
-      // TODO: write to logger instead of console.warning
       return { file: fileName, data: {} };
     }
   }
