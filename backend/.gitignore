@@ -2,5 +2,9 @@
 config/*.toml
 !config/base.toml
 
+# Ignore everything under the config/datasource
+config/datasource/*
+!config/datasource/.gitkeep
+
 # Ignore the .env file which may contain sensitive information
 .env
