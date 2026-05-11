@@ -5,7 +5,8 @@
   "main": "src/server.ts",
   "license": "MIT",
   "scripts": {
-    "script": "ts-node -r dotenv/config -r tsconfig-paths/register"
+    "script": "ts-node -r dotenv/config -r tsconfig-paths/register",
+    "db:config": "yarn script ./scripts/db/genConfig"
   },
   "nodemonConfig": {
     "watch": [
