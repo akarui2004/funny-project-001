@@ -33,10 +33,8 @@ interface DbConfig {
 
   fs.writeFileSync(outputPath, jsonString, 'utf8'); // Write content into file
 
-  console.log(`Successfully generated: ${outputPath}`)
-})()
-.catch((err) => {
+  console.log(`Successfully generated: ${outputPath}`);
+})().catch((err) => {
   console.error('Failed to generate config:', err);
   process.exit(1);
-})
-.finally(() => process.exit(0));
+});
