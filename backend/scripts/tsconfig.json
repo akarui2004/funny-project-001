@@ -8,6 +8,6 @@
       "scripts/*": ["./*"]
     }
   },
-  "include": ["./**/*"],
+  "include": ["./**/*", "../src/**/*", "../config/**/*"],
   "exclude": ["node_modules"]
 }
