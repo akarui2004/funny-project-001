@@ -1,19 +1,34 @@
-require('src/setup');
+import { BaseProgram, CommandArgumentInterface } from '../BaseProgram';
 
-import { Command } from 'commander';
+class CreateMigrationProgram extends BaseProgram {
+  commandName(): string {
+    return 'create-migration';
+  }
 
-const program = new Command();
+  commandDescription(): string {
+    return 'Create a new migration file';
+  }
 
-program
-  .name('create-migration')
-  .description('Create a new migration file')
-  .argument('<name>', 'Name of the migration')
-  .argument('[options]', 'Additional options for the migration')
-  .action(async (...args) => {
-    // console.log(args);
+  commandArguments(): Array<CommandArgumentInterface> {
+    return [
+      { name: '<name>', desc: 'Name of the migration' },
+      { name: '[options]', desc: 'Additional options for the migration' }
+    ];
+  }
+
+  commandOptions(): Array<CommandArgumentInterface> {
+    return [];
+  }
+
+  actionExecutor(...args: any): void {
     const [name, options] = args;
-    console.log(`Creating migration: ${name} with options: ${options}`);
-    // console.log(`Creating migration: ${name}`);
-  });
+    console.log(
+      this.prettyPrinter.green(
+        `Creating migration: ${name} with options: ${options}`
+      )
+    );
+  }
+}
 
-program.parse();
+const program = new CreateMigrationProgram();
+program.execute();
