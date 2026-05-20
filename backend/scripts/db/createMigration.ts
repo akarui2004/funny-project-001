@@ -46,20 +46,28 @@ class CreateMigrationProgram extends BaseProgram {
     // The <name> will be converted to snake_case and prefixed with the current timestamp in the format of YYYYMMDDHHmmss.
     const timestamp = format(new Date(), 'yyyyMMddHHmmss');
     const fileName = `${timestamp}-${this.toSnakeCase(name)}.ts`;
-
-    if (!fs.existsSync(this.MIGRATION_DIR)) {
-      fs.mkdirSync(this.MIGRATION_DIR, { recursive: true }); // Create the directory if it doesn't exist
-    }
-
-    const templateContent = fs.readFileSync(this.TEMPLATE_FILE, 'utf8');
     const filePath = path.join(this.MIGRATION_DIR, fileName);
-    fs.writeFileSync(filePath, templateContent, 'utf8');
 
-    console.log(
-      this.prettyPrinter.green(
-        `Migration file created successfully: ${fileName}`
-      )
-    );
+    try {
+      if (!fs.existsSync(this.MIGRATION_DIR)) {
+        fs.mkdirSync(this.MIGRATION_DIR, { recursive: true }); // Create the directory if it doesn't exist
+      }
+
+      const templateContent = fs.readFileSync(this.TEMPLATE_FILE, 'utf8');
+      fs.writeFileSync(filePath, templateContent, 'utf8');
+
+      console.log(
+        this.prettyPrinter.green(
+          `Migration file created successfully: ${fileName}`
+        )
+      );
+    } catch (error: any) {
+      console.log(
+        this.prettyPrinter.red(
+          `Failed to create migration file: ${error.message}`
+        )
+      );
+    }
   }
 
   private toSnakeCase(str: string): string {
