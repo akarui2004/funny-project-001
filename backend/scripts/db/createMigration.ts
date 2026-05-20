@@ -13,8 +13,8 @@ class CreateMigrationProgram extends BaseProgram {
   );
 
   private readonly TEMPLATE_FILE = path.resolve(
-    __dirname,
-    '..',
+    process.cwd(),
+    'scripts',
     'db',
     'templates',
     'create-migration.tpl'
