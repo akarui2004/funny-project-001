@@ -52,7 +52,6 @@ class CreateMigrationProgram extends BaseProgram {
     }
 
     const templateContent = fs.readFileSync(this.TEMPLATE_FILE, 'utf8');
-    console.log(templateContent);
     const filePath = path.join(this.MIGRATION_DIR, fileName);
     fs.writeFileSync(filePath, templateContent, 'utf8');
 
