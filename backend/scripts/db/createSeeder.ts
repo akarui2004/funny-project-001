@@ -5,13 +5,13 @@ import {
   MigrationSeederConcernInterface
 } from './concern';
 
-class CreateMigrationProgram extends BaseProgram {
-  private readonly MIGRATION_DIR = path.resolve(
+class CreateSeederProgram extends BaseProgram {
+  private readonly SEEDER_DIR = path.resolve(
     process.cwd(),
     'src',
     'app',
     'db',
-    'migrations'
+    'seeders'
   );
 
   private readonly TEMPLATE_FILE = path.resolve(
@@ -23,17 +23,17 @@ class CreateMigrationProgram extends BaseProgram {
   );
 
   commandName(): string {
-    return 'create-migration';
+    return 'create-seeder';
   }
 
   commandDescription(): string {
-    return 'Create a new migration file';
+    return 'Create a new seeder file';
   }
 
   commandArguments(): Array<CommandArgumentInterface> {
     return [
-      { name: '<name>', desc: 'Name of the migration' },
-      { name: '[options]', desc: 'Additional options for the migration' }
+      { name: '<name>', desc: 'Name of the seeder' },
+      { name: '[options]', desc: 'Additional options for the seeder' }
     ];
   }
 
@@ -46,7 +46,7 @@ class CreateMigrationProgram extends BaseProgram {
 
     try {
       const msConcernConfigs: MigrationSeederConcernInterface = {
-        creationDir: this.MIGRATION_DIR,
+        creationDir: this.SEEDER_DIR,
         templateFile: this.TEMPLATE_FILE,
         name: name
       };
@@ -54,18 +54,16 @@ class CreateMigrationProgram extends BaseProgram {
       const { relativeFilePath } = msConcern.execute();
       console.log(
         this.prettyPrinter.green(
-          `Migration file created successfully: ${relativeFilePath}`
+          `Seeder file created successfully: ${relativeFilePath}`
         )
       );
     } catch (error: any) {
       console.log(
-        this.prettyPrinter.red(
-          `Failed to create migration file: ${error.message}`
-        )
+        this.prettyPrinter.red(`Failed to create seeder file: ${error.message}`)
       );
     }
   }
 }
 
-const program = new CreateMigrationProgram();
+const program = new CreateSeederProgram();
 program.execute();

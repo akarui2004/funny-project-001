@@ -2,6 +2,7 @@ require('src/setup');
 
 import { Command } from 'commander';
 import pc from 'picocolors';
+import { Colors } from 'picocolors/types';
 
 export interface CommandArgumentInterface {
   name: string;
@@ -14,7 +15,7 @@ export abstract class BaseProgram {
   private _arguments: Array<CommandArgumentInterface> | undefined;
   private _options: Array<CommandArgumentInterface> | undefined;
 
-  protected prettyPrinter: any = pc;
+  protected prettyPrinter: Colors = pc;
 
   /**
    * The command name should be a unique identifier for the command. It will be used to execute the command from the command line.

@@ -6,8 +6,10 @@
   "license": "MIT",
   "scripts": {
     "script": "ts-node -r dotenv/config -r tsconfig-paths/register",
+    "build": "tsc --project ./tsconfig.json",
     "db:config": "yarn script ./scripts/db/genConfig",
-    "migration:create": "yarn script ./scripts/db/createMigration"
+    "migration:create": "yarn script ./scripts/db/createMigration",
+    "seeder:create": "yarn script ./scripts/db/createSeeder"
   },
   "nodemonConfig": {
     "watch": [
