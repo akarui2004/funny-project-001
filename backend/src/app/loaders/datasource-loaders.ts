@@ -3,18 +3,18 @@ import appConfig from '../config';
 import { DSSchemaType } from '../schemas';
 import appUtils from '../utils';
 
-class Datasource {
-  static #instance: Datasource;
+class DatasourceLoader {
+  static #instance: DatasourceLoader;
 
   private defaultSource: string = 'default';
 
   private constructor() {}
 
-  public static getInstance(): Datasource {
-    if (!Datasource.#instance) {
-      Datasource.#instance = new Datasource();
+  public static getInstance(): DatasourceLoader {
+    if (!DatasourceLoader.#instance) {
+      DatasourceLoader.#instance = new DatasourceLoader();
     }
-    return Datasource.#instance;
+    return DatasourceLoader.#instance;
   }
 
   public setSource(source: string) {
@@ -27,17 +27,26 @@ class Datasource {
 
     try {
       await sequelizeInstance.authenticate();
-      appUtils.logger.info(`Connection to datasource "${this.defaultSource}" has been established successfully.`);
+      appUtils.logger.info(
+        `Connection to datasource "${this.defaultSource}" has been established successfully.`
+      );
     } catch (error) {
-      appUtils.logger.error(`Unable to connect to the datasource "${this.defaultSource}":`, { error });
+      appUtils.logger.error(
+        `Unable to connect to the datasource "${this.defaultSource}":`,
+        { error }
+      );
       throw error; // Rethrow the error after logging
     }
   }
 
   public getDbSequelizeConfiguration(source: string): Options {
-    const datasourceConf = appConfig.datasources?.[source as keyof typeof appConfig.datasources] as DSSchemaType | undefined;
+    const datasourceConf = appConfig.datasources?.[
+      source as keyof typeof appConfig.datasources
+    ] as DSSchemaType | undefined;
     if (!datasourceConf) {
-      throw new Error(`Datasource configuration for source "${source}" is missing.`);
+      throw new Error(
+        `Datasource configuration for source "${source}" is missing.`
+      );
     }
 
     return {
@@ -62,8 +71,9 @@ class Datasource {
 }
 
 const datasource = {
-  init: async () => await Datasource.getInstance().authenticate(),
-  setSource: (source: string) => Datasource.getInstance().setSource(source)
+  init: async () => await DatasourceLoader.getInstance().authenticate(),
+  setSource: (source: string) =>
+    DatasourceLoader.getInstance().setSource(source)
 };
 
 export default datasource;
