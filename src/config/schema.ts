@@ -28,11 +28,6 @@ const PostgresSchema = z.object({
   options: PostgresOptionsSchema,
 })
 
-const DatasourceSchema = z.object({
-  source: z.string().default('default'),// default datasource
-  default: PostgresSchema,
-})
-
 const RedisOptionSchema = z.object({
   connectTimeout: z.coerce.number().default(5000),
   maxRetriesPerRequest: z.coerce.number().default(3),
@@ -49,7 +44,6 @@ const RedisDbSchema = z.object({
 });
 
 const RedisSchema = z.object({
-  source: z.string().default('main'), // main redis source
   main: RedisDbSchema,
   queue: RedisDbSchema,
 })
@@ -71,9 +65,23 @@ const LoggingSchema = z.object({
   rotate: LoggingRotateSchema,
 });
 
-export const ConfigSchema = z.object({
+const ConfigSchema = z.object({
   app: AppSchema,
-  datasource: DatasourceSchema,
+  datasource: PostgresSchema,
   redis: RedisSchema,
   logging: LoggingSchema,
 });
+
+export type TConfig = z.infer<typeof ConfigSchema>;
+export type TAppConfig = z.infer<typeof AppSchema>;
+export type TPostgresConfig = z.infer<typeof PostgresSchema>;
+export type TRedisConfig = z.infer<typeof RedisSchema>;
+export type TLoggingConfig = z.infer<typeof LoggingSchema>;
+
+export {
+  ConfigSchema,
+  AppSchema,
+  PostgresSchema,
+  RedisSchema,
+  LoggingSchema,
+}
