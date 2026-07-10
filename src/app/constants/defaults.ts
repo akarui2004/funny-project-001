@@ -1,4 +1,6 @@
-const ROOT_DIR = require('./concern').getRootPath(__dirname, '.app_root');
+import { getRootPath } from "./concern";
+
+const ROOT_DIR = getRootPath(__dirname, '.app_root');
 
 export const Defaults = {
   ROOT_DIR
