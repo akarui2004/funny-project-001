@@ -7,8 +7,8 @@ This document describes the configuration options available in `base.toml`.
 | Section | Description |
 |---------|-------------|
 | `[env]` | Server environment settings |
-| `[datasources]` | Database connection configuration |
-| `[redis]` | Redis connection configuration |
+| `[datasource]` | Database connection configuration (supports multiple named sources) |
+| `[redis]` | Redis connection configuration (supports multiple named instances) |
 | `[logging]` | Logging configuration |
 
 ---
@@ -17,33 +17,24 @@ This document describes the configuration options available in `base.toml`.
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `listenPort` | number | `3000` | The port number on which the server will listen for incoming requests. |
+| `port` | number | `3000` | The port number on which the server will listen for incoming requests. |
 
 ---
 
-## [datasources]
+## [datasource]
+
+Supports multiple named datasources. Each datasource has its own subsection (e.g., `[datasource.master]`, `[datasource.replica]`).
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `source` | string | `"default"` | The name of the default datasource to be used by the application. |
-
----
-
-## [datasources.\<name\>]
-
-Supports multiple datasources. Each datasource has its own section (e.g., `[datasources.default]`, `[datasources.replica]`).
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `dialect` | string | — | The type of database being used (e.g., `postgresql`, `mysql`, `sqlite`). |
+| `dialect` | string | — | The type of database being used (e.g., `postgres`). |
 | `host` | string | `"localhost"` | The host name or IP address of the database server. |
 | `port` | number | `5432` | The port number on which the database server is listening. |
 | `schema` | string | `"public"` | The database schema to be used. |
-| `database` | string | — | The name of the database to connect to. |
-| `username` | string | — | The username for authenticating with the database. |
-| `password` | string | — | The password for authentication with the database. |
+| `username` | string | `""` | The username for authenticating with the database. |
+| `password` | string | `""` | The password for authentication with the database. |
 
-### [datasources.\<name\>.pool]
+### [datasource.\<name\>.pool]
 
 Connection pool settings.
 
@@ -51,49 +42,42 @@ Connection pool settings.
 |-----|------|---------|-------------|
 | `max` | number | `10` | The maximum number of connections in the connection pool. |
 | `min` | number | `0` | The minimum number of connections in the connection pool. |
-| `acquire` | number | `30000` | Max time (ms) to try to get connection before throwing error. |
+| `acquireTimeout` | number | `30000` | Max time (ms) to try to get a connection before throwing an error. |
 | `idle` | number | `10000` | Max time (ms) that a connection can be idle before being released. |
 
-### [datasources.\<name\>.options]
+### [datasource.\<name\>.option]
 
 Additional connection options.
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `ssl` | boolean | `false` | Whether to use SSL for the database connection. |
-| `connectTimeout` | number | `60000` | The maximum time (ms) to wait for a connection to be established before timing out. |
+| `connectionTimeout` | number | `60000` | The maximum time (ms) to wait for a connection to be established before timing out. |
 
 ---
 
 ## [redis]
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `source` | string | `"main"` | The name of the default Redis instance to be used by the application. |
+Supports multiple named Redis instances. Each instance has its own subsection (e.g., `[redis.master]`, `[redis.queue]`).
 
----
-
-## [redis.\<name\>]
-
-Supports multiple Redis instances. Each instance has its own section (e.g., `[redis.main]`, `[redis.queue]`).
+### [redis.\<name\>]
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `host` | string | `"localhost"` | The host name or IP address of the Redis server. |
 | `port` | number | `6379` | The port number on which the Redis server is listening. |
-| `keyPrefix` | string | `""` | The key prefix for all Redis keys (e.g., `"fp-api:"`). |
-| `db` | number | `0` | The Redis database number (0-15). |
+| `keyPrefix` | string | — | The key prefix for all Redis keys (e.g., `"app:"`, `"queue:"`). |
+| `db` | number | `0` | The Redis database number. |
 
-### [redis.\<name\>.options]
+### [redis.\<name\>.option]
 
 Connection options for Redis.
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `connectTimeout` | number | `5000` | The maximum time (ms) to wait for a connection. |
-| `keepAlive` | number | `5000` | Idle connection timeout (ms). |
-| `enableReadyCheck` | boolean | `true` | Check connection readiness before commands. |
-| `maxRetriesPerRequest` | number | `3` | Number of retries for a failed command. |
+| `connectionTimeout` | number | `60000` | The maximum time (ms) to wait for a connection to be established. |
+| `keepAlive` | number | `30000` | Idle connection timeout (ms). |
+| `maxRetriesPerRequest` | number | `5` | Number of retries for a failed command. |
 
 ---
 
@@ -105,32 +89,94 @@ Connection options for Redis.
 | `baseFileName` | string | `"app"` | The base name for log files. |
 | `level` | string | `"info"` | The default log level (`trace`, `debug`, `info`, `warn`, `error`, `fatal`). |
 
-### [logging.rotate]
+### [logging.rotatingFile]
 
 Log rotation settings.
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `frequency` | string | `"daily"` | How often to rotate log files (`daily`, `hourly`). |
-| `mkdir` | boolean | `true` | Whether to automatically create the log directory if it doesn't exist. |
 | `size` | string | `"100m"` | Maximum size of a log file before rotation (e.g., `"100m"`, `"1g"`). |
 
-### [logging.rotate.limit]
+### [logging.rotatingFile.limit]
 
 Limits for log file retention.
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `count` | number | `30` | Maximum number of log files to keep. |
-| `removeOtherLogFile` | boolean | `true` | Whether to remove log files not created by the current process. |
 
 ---
 
-## Usage
+## Configuration Loading & Override Order
 
-1. Copy `config/base.toml` to `config/local.toml` or `config/production.toml`
-2. Override values as needed for your environment
-3. The configuration loader will merge configs in order: `base.toml` → `<environment>.toml`
+The configuration loader merges files in a strict precedence order. Later layers override earlier ones for any key they define.
+
+### Layer Order (lowest → highest precedence)
+
+```
+base.toml
+   ↓ overridden by
+<environment>.toml          (e.g. development.toml, staging.toml, production.toml)
+   ↓ overridden by
+<environment>.local.toml     (e.g. development.local.toml, production.local.toml)
+```
+
+### Rules
+
+1. **`base.toml`** — defaults shared by every environment. Defines sane defaults + structural schema (pool sizes, log rotation, etc.).
+2. **`<environment>.toml`** — environment-specific overrides committed to the repo (e.g. `development.toml`, `staging.toml`, `production.toml`).
+3. **`<environment>.local.toml`** — local, machine-specific overrides. **Never committed to git** (must be listed in `.gitignore`). Use it for personal credentials, ports, or paths on a single dev's machine.
+
+### Active Environment
+
+The active environment is determined by `NODE_ENV` (or the equivalent env var used by the config loader). For example:
+
+| `NODE_ENV`     | Files merged                                  |
+|----------------|-----------------------------------------------|
+| `development`  | `base.toml` → `development.toml` → `development.local.toml` |
+| `staging`      | `base.toml` → `staging.toml` → `staging.local.toml`         |
+| `production`   | `base.toml` → `production.toml` → `production.local.toml`   |
+
+### Merge Semantics
+
+- **Deep merge** for TOML tables: a key defined in `development.toml` only overrides that specific key — siblings from `base.toml` remain intact.
+- **Array / list replacement**: arrays are replaced wholesale, not merged element-wise.
+- **Missing file = skipped**: if `development.local.toml` doesn't exist, the loader simply moves on to the next layer.
+
+### Typical Workflow
+
+```bash
+# 1. base.toml is shared and committed
+cat config/base.toml
+
+# 2. Pick (or create) your environment file
+cat config/development.toml        # committed, team-wide dev config
+
+# 3. Create a local override (gitignored) for your own machine
+cat > config/development.local.toml <<'EOF'
+[datasource.master]
+  username = "minh"
+  password = "my_local_pg_pw"
+
+[redis.master]
+  port = 6380                     # I run Redis on a non-default port locally
+EOF
+
+# 4. Run the app — loader merges base → development → development.local
+NODE_ENV=development node dist/main.js
+```
+
+### `.gitignore` Recommendation
+
+Add these to `.gitignore` so local overrides never leak:
+
+```gitignore
+config/*.local.toml
+config/.*.local.toml
+```
+
+---
 
 ## Examples
 
@@ -138,63 +184,101 @@ Limits for log file retention.
 
 ```toml
 [env]
-  listen_port = 3000
+  port = 3000
 
-[datasources]
-  source = "default"
+[datasource.master]
+  dialect = "postgres"
+  host = "localhost"
+  port = 5432
+  username = "dev"
+  password = "dev"
+  [datasource.master.pool]
+    max = 10
+    min = 0
+    acquireTimeout = 30000
+    idle = 10000
+  [datasource.master.option]
+    ssl = false
+    connectionTimeout = 60000
 
-  [datasources.default]
-    host = "localhost"
-    port = 5432
-    username = "dev"
-    password = "dev"
+[redis.master]
+  host = "localhost"
+  port = 6379
+  keyPrefix = "app:"
+  db = 0
+  [redis.master.option]
+    connectionTimeout = 60000
+    keepAlive = 30000
+    maxRetriesPerRequest = 5
 
-[redis]
-  source = "main"
+[redis.queue]
+  host = "localhost"
+  port = 6379
+  keyPrefix = "queue:"
+  db = 1
+  [redis.queue.option]
+    connectionTimeout = 60000
+    keepAlive = 30000
+    maxRetriesPerRequest = 5
 
-  [redis.main]
-    host = "localhost"
-    port = 6379
-    keyPrefix = "fp-dev:"
-    db = 0
-
-    [redis.main.options]
-      connectTimeout = 5000
-      keepAlive = 5000
-      enableReadyCheck = true
-      maxRetriesPerRequest = 3
+[logging]
+  path = "logs"
+  baseFileName = "app"
+  level = "info"
+  [logging.rotatingFile]
+    frequency = "daily"
+    size = "100m"
+    [logging.rotatingFile.limit]
+      count = 30
 ```
 
 ### Production
 
 ```toml
 [env]
-  listen_port = 8080
+  port = 8080
 
-[datasources]
-  source = "default"
+[datasource.master]
+  host = "db.production.internal"
+  port = 5432
+  username = "app_user"
+  password = "${DB_PASSWORD}"
+  [datasource.master.option]
+    ssl = true
+    connectionTimeout = 30000
 
-  [datasources.default]
-    host = "db.production.internal"
-    port = 5432
-    database = "funny_project_prod"
-    username = "app_user"
+[redis.master]
+  host = "redis.production.internal"
+  port = 6379
+  keyPrefix = "app:"
+  db = 0
+  [redis.master.option]
+    connectionTimeout = 10000
+    keepAlive = 30000
+    maxRetriesPerRequest = 3
 
-    [datasources.default.options]
-      ssl = true
-      connectTimeout = 30000
+[redis.queue]
+  host = "redis.production.internal"
+  port = 6379
+  keyPrefix = "queue:"
+  db = 1
+  [redis.queue.option]
+    connectionTimeout = 10000
+    keepAlive = 30000
+    maxRetriesPerRequest = 3
 
-[redis]
-  source = "main"
-
-  [redis.main]
-    host = "redis.production.internal"
-    port = 6379
-    keyPrefix = "fp-prod:"
-    db = 0
-
-    [redis.main.options]
-      connectTimeout = 10000
-      enableReadyCheck = true
-      maxRetriesPerRequest = 3
+[logging]
+  path = "/var/log/app"
+  baseFileName = "app"
+  level = "warn"
+  [logging.rotatingFile]
+    frequency = "daily"
+    size = "1g"
+    [logging.rotatingFile.limit]
+      count = 14
 ```
+
+## Notes
+
+- `[datasource]` (singular) holds one or more named database connections; there is no top-level `source` selector — pick the named source your application code expects (e.g., `master`).
+- `[redis]` has no top-level `source` selector; the application code chooses which named instance to use (`master`, `queue`, etc.).

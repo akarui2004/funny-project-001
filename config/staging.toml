@@ -1,0 +1,4 @@
+[datasource]
+  [datasource.master]
+    [datasource.master.pool]
+      min = 5
