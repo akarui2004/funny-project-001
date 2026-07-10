@@ -1,6 +1,6 @@
-import { Defaults } from "./constants";
+require('./bootstrap');
+
+import { appConfig } from "./app";
 
 console.log("Template for NodeJS project with TypeScript and ExpressJS");
-
-const defaultConst = Defaults;
-console.log(defaultConst);
+console.log(appConfig.datasource.master);

@@ -1,1 +1,1 @@
-export * as appConfig from './config';
+export { default as appConfig } from './config'; // Trick to export to use with type definition
