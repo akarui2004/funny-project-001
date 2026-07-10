@@ -1,6 +1,6 @@
-import { appConstant } from "src/app";
+import { Defaults } from "./constants";
 
 console.log("Template for NodeJS project with TypeScript and ExpressJS");
 
-const defaultConst = appConstant.Defaults;
+const defaultConst = Defaults;
 console.log(defaultConst);
