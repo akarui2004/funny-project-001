@@ -9,7 +9,5 @@
   "[javascript]": {
     "editor.defaultFormatter": "vscode.typescript-language-features",
     "editor.formatOnSave": true
-  },
-  "prettier.singleQuote": true,
-  "prettier.requireConfig": true
+  }
 }
