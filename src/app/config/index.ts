@@ -1,3 +1,4 @@
+import ansis from 'ansis';
 import { defu } from 'defu';
 import fs from 'fs';
 import path from 'path';
@@ -8,20 +9,19 @@ import { AppConfig, ROOT_CONFIG_SCHEMA } from "./config.type";
 const loadFile = (fileName: string): unknown => {
   const configPath = path.resolve(config.__configFolder, fileName);
   if (!fs.existsSync(configPath)) {
-    // throw new Error(`Configuration file does not exist: ${fileName} at ${config.__configFolder}`)
-    // Write log here instead of raise error
-    return;
+    console.log(ansis.yellow.bold(`Configuration file does not exist: ${fileName} at ${config.__configFolder}`))
+    process.exit(1);
   }
 
   try {
     const toml = Toml.parse(fs.readFileSync(configPath, 'utf-8'));
     if (toml.__configure || toml.__configFolder) {
-      // throw new Error('Invalid configuration: __configure and __configFolder are reserved keywords and cannot be set in the TOML file.')
-      // Write log here instead of raise error
+      throw new Error('Invalid configuration: __configure and __configFolder are reserved keywords and cannot be set in the TOML file.')
     }
     return toml;
   } catch (error: any) {
-    // Write log in here instead of raise error
+    console.log(ansis.red.bold(error.message ?? 'Unknow error'));
+    process.exit(1);
   }
 }
 
@@ -39,7 +39,8 @@ const validateSchema = (rawConfig: unknown) => {
       ...errors,
     ].join("\n");
 
-    throw new Error(errorMessage)
+    console.log(ansis.red.bold(errorMessage));
+    process.exit(1);
   }
 }
 

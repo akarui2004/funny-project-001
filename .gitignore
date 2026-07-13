@@ -153,3 +153,9 @@ config/datasource/*
 
 # Ignore the .env file which may contain sensitive information
 .env
+
+# Ignore everything in the logs directory
+/logs/*
+
+# Except for the .gitkeep file
+!/logs/.gitkeep

@@ -1,6 +1,8 @@
 require('./bootstrap');
 
-import { appConfig } from "./app";
+import { logger } from "./utils";
 
 console.log("Template for NodeJS project with TypeScript and ExpressJS");
-console.log(appConfig.datasource.master);
+
+logger.info('Test code');
+logger.warn('Warning code test');

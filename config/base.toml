@@ -38,12 +38,11 @@ port = 3000
       keepAlive = 30000
       maxRetriesPerRequest = 5
 
-[logging]
-  path = "logs"
-  baseFileName = "app"
-  level = "info"
-  [logging.rotatingFile]
-    frequency = "daily"
-    size = "100m"
-    [logging.rotatingFile.limit]
-      count = 30
+[logger]
+  level = 'info'
+  [logger.rotating]
+    dirname = 'logs'
+    prefixFileName = 'app'
+    datePattern = 'YYYY-MM-DD'
+    maxSize = '100m'
+    maxFiles = '30d'
