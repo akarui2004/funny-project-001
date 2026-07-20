@@ -1,7 +1,7 @@
 import path from 'path';
-import { getRootPath } from "./concern";
+import { getDirectory } from 'src/utils';
 
-const ROOT_DIR = getRootPath(__dirname, '.app_root');
+const ROOT_DIR = getDirectory(__dirname, '.app_root');
 const CONFIG_DIF = path.resolve(ROOT_DIR, 'config');
 const SRC_DIR = path.resolve(ROOT_DIR, 'src');
 const APP_DIR = path.resolve(SRC_DIR, 'app');

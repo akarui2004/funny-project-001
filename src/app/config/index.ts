@@ -2,11 +2,37 @@ import ansis from 'ansis';
 import { defu } from 'defu';
 import fs from 'fs';
 import path from 'path';
-import { NODE_ENV } from 'src/constants';
+import { Defaults, NODE_ENV } from 'src/constants';
 import Toml from 'toml';
-import { AppConfig, ROOT_CONFIG_SCHEMA } from "./config.type";
+import { AppConfig, CONFIG_SCHEMA, TConfigSchema } from "./config.type";
 
 // TODO: Updates the implementation to defer class loading and apply the caching framework
+
+class ConfigManager {
+  // Multiple environment setups for the main config
+  private primaryConfigEnvs: Array<string> = ['base', NODE_ENV, `${NODE_ENV}.local`];
+  private _cachedConfig: TConfigSchema | null = null;
+
+  private get raw(): TConfigSchema | null {
+    if (!this._cachedConfig) {
+      // Load the config in here
+    }
+
+    return this._cachedConfig;
+  }
+
+  private resolvedConfig() {
+    // const configData: TConfigSchema = {} as TConfigSchema;
+  }
+
+  private loadPrimaryEnvFiles(fullFileName: string) {
+    const configPath = path.resolve()
+  }
+
+  public getLogDir(): string {
+    return Defaults.CONFIG_DIF;
+  }
+}
 
 // const loadFile = (fileName: string): unknown => {
 //   const configPath = path.resolve(config.__configFolder, fileName);
