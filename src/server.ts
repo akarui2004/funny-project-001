@@ -1,10 +1,4 @@
-// require('./bootstrap');
+import { config } from 'src/app';
 
-// import { Defaults } from "./constants";
-
-// import { logger } from "./utils";
-
-console.log("Template for NodeJS project with TypeScript and ExpressJS");
-
-// logger.info('Test code');
-// logger.warn('Warning code test');
+const dialect = config.datasource.master.dialect;
+console.log(dialect);

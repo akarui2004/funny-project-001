@@ -38,9 +38,9 @@ port = 3000
       keepAlive = 30000
       maxRetriesPerRequest = 5
 
-[logger]
+[logging]
   level = 'info'
-  [logger.rotating]
+  [logging.rotation]
     dirname = 'logs'
     prefixFileName = 'app'
     datePattern = 'YYYY-MM-DD'
