@@ -68,7 +68,6 @@ class AppConfig extends ConfigManager {
   public get env() { return this.raw.env; }
   public get datasource() { return this.raw.datasource; }
   public get redis() { return this.raw.redis; }
-  public get logging() { return this.raw.logging; }
 }
 
 export const config = new AppConfig();
