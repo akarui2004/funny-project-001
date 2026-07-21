@@ -1,7 +1,7 @@
 import path from 'path';
-import { getDirectory } from 'src/utils';
+import { resolveRootDir } from './resolve-project-root';
 
-const ROOT_DIR = getDirectory(__dirname, '.app_root');
+const ROOT_DIR = resolveRootDir(__dirname, '.app_root');
 const CONFIG_DIR = path.resolve(ROOT_DIR, 'config');
 const SRC_DIR = path.resolve(ROOT_DIR, 'src');
 const APP_DIR = path.resolve(SRC_DIR, 'app');

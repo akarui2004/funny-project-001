@@ -2,7 +2,6 @@ import { Defaults, Loggings } from 'src/constants';
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 
-// Still have the errors because we can't get the Loggings, it is undefined for now.
 const { prefixFileName, datePattern, maxSize, maxFiles } = Loggings.rotation;
 const winstonDateTimeFormat = 'YYYY-MM-DD HH:mm:ss Z';
 
