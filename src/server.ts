@@ -9,6 +9,10 @@ import { logger } from './utils';
   // Middleware
   app.use(express.json());
 
+  // Redis initialize
+
+  // Database initialize
+
   app.listen(appPort, () => {
     logger.info(`Server running at port: ${appPort}`);
   });
