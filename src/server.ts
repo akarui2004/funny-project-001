@@ -1,7 +1,17 @@
+import express from 'express';
 import { config } from 'src/app';
-import { logger } from 'src/utils';
+import { logger } from './utils';
 
-const datasource = config.datasource;
-console.log(datasource, 3001);
+(async () => {
+  const app = express();
+  const appPort = config.env.port;
 
-logger.info('test logger');
+  // Middleware
+  app.use(express.json());
+
+  app.listen(appPort, () => {
+    logger.info(`Server running at port: ${appPort}`);
+  });
+})().catch((error) => {
+  logger.error(`Failed to start server: ${error.message}`);
+});

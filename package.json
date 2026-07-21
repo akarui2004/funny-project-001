@@ -5,6 +5,7 @@
   "main": "src/server.ts",
   "license": "MIT",
   "scripts": {
+    "dev": "nodemon",
     "script": "ts-node -r dotenv/config -r tsconfig-paths/register",
     "console": "npx tsx ./scripts/console.ts",
     "build": "tsc --project ./tsconfig.json",

@@ -28,7 +28,7 @@ class ConfigManager {
       const isOptional = configFile.endsWith(`.local.toml`);
       if (!fs.existsSync(configPath)) {
         if (isOptional) {
-          console.log(ansis.yellowBright.bold(`🗄️ [AppConfig] Skipped the ${configFile}`));
+          console.log(ansis.yellowBright.bold(`🗄️  [AppConfig] Skipped the ${configFile}`));
           continue; // skip local override file safety if missing
         }
         throw new Error(`Required config file "${configFile}" does not exist in config path: ${Defaults.CONFIG_DIR}`);
@@ -37,7 +37,7 @@ class ConfigManager {
       const tomlData = this.loadEnvFile(configPath);
       // defu priority is left-to-right, so local overrides env, which overrides base
       _tomlObj = defu(tomlData, _tomlObj);
-      console.log(ansis.blueBright.bold(`🗄️ [AppConfig] Loaded the ${configFile}`))
+      console.log(ansis.blueBright.bold(`🗄️  [AppConfig] Loaded the ${configFile}`))
     }
 
     return this.validateSchema(_tomlObj);
