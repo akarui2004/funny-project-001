@@ -141,3 +141,21 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Ignore all config/*.toml except base.toml
+config/*.local.toml
+config/.*.local.toml
+!config/base.toml
+
+# Ignore everything under the config/datasource
+config/datasource/*
+!config/datasource/.gitkeep
+
+# Ignore the .env file which may contain sensitive information
+.env
+
+# Ignore everything in the logs directory
+/logs/*
+
+# Except for the .gitkeep file
+!/logs/.gitkeep

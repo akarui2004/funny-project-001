@@ -1,0 +1,10 @@
+[datasource]
+  [datasource.master]
+    [datasource.master.pool]
+      max = 20
+      min = 5
+      acquireTimeout = 60000
+      idle = 5000
+    [datasource.master.option]
+      ssl = true
+      connectionTimeout = 120000

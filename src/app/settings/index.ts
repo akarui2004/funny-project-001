@@ -1,0 +1,1 @@
+export { appRedis } from './redis';

@@ -1,0 +1,4 @@
+[datasource]
+  [datasource.master]
+    username = "postgres"
+    password = "postgres"

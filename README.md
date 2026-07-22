@@ -18,23 +18,13 @@ A casual hobby repo built purely for entertainment. No deadlines, no pressure—
 
 ### Programing
 ```
-  Node.js 🤪 - React.js 🤔 maybe
-    ↓
-  NOT Go 🚫 - Rust 🦀 a bit maybe
-    ↓
-  PHP 💀 maybe - Legacy Ruby 🤪💎
-    ↓
-  C# 🤣 lol 👊 👊 👊 Perl 🐪🐪
-    ↓
-  🐍 Python last but not least 🥴🥴🥴
+  Node.js 🤪
 ```
 
 ### Database
 ```
 Data Layer Mood Swings:
-├── MySQL 🧑‍💼 (boring)
 ├── PostgreSQL 🧠 (when I pretend to be serious)
-├── MongoDB 🌀 (schema? what schema?)
 └── Redis ⚡ (for that sweet sweet caching dopamine)
 ```
 
