@@ -1,15 +1,19 @@
 import express from 'express';
-import { config } from 'src/app';
+import { appConfig, appRedis } from 'src/app';
 import { logger } from './utils';
 
 (async () => {
   const app = express();
-  const appPort = config.env.port;
+  const appPort = appConfig.env.port;
 
   // Middleware
   app.use(express.json());
 
-  // Redis initialize
+  // Redis storage initialize
+  appRedis.initialize('master');
+
+  // Redis queue initialize
+  appRedis.initialize('queue');
 
   // Database initialize
 

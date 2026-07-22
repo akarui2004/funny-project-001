@@ -8,3 +8,6 @@ export const CONFIG_SCHEMA = z.object({
 });
 
 export type TConfigSchema = z.infer<typeof CONFIG_SCHEMA>;
+export type TRedisSchema = z.infer<typeof REDIS_SCHEMA>;
+export type TDatasourceSchema = z.infer<typeof DATASOURCE_SCHEMA>;
+export type TEnvSchema = z.infer<typeof ENV_SCHEMA>;

@@ -70,4 +70,5 @@ class AppConfig extends ConfigManager {
   public get redis() { return this.raw.redis; }
 }
 
-export const config = new AppConfig();
+const config = new AppConfig();
+export default config;

@@ -9,6 +9,7 @@ const REDIS_OPTION = z.object({
 const REDIS_CONNECTION = z.object({
   host: z.string().default('localhost'),
   port: z.coerce.number().default(6379),
+  password: z.string().optional(),
   keyPrefix: z.string().regex(/^[a-zA-Z0-9]+:$/, {
     message: "keyPrefix must end with a colon (e.g., 'app:')",
   }),
