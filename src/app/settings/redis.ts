@@ -13,7 +13,7 @@ class Redis {
     this.redisConfig = appConfig.redis;
   }
 
-  public initialize(redisType: keyof TRedisSchema = 'master') {
+  public async initialize(redisType: keyof TRedisSchema = 'master') {
     const typeKey = String(redisType);
     const redisConn = this.redisConfig[redisType];
 
@@ -29,6 +29,7 @@ class Redis {
       keyPrefix,
       db: db ?? 0,
       connectTimeout: connectionTimeout,
+      lazyConnect: true, // Prevent auto-connecting on instantation
       ...restOptions,
     })
 
@@ -42,7 +43,14 @@ class Redis {
       console.error(ansis.redBright.bold(`❌ [Redis:${typeKey}] Error:`), err.message);
     });
 
-    this.clients[redisType] = client;
+    try {
+      // 👈 Await the actual connection phase
+      await client.connect();
+      this.clients[redisType] = client;
+    } catch (error: any) {
+      console.error(ansis.redBright.bold(`❌ [Redis:${typeKey}] Failed to connect to Redis.`));
+      throw error; // Rethrow so startup fails fast on bad credentials/unreachable host
+    }
   }
 
   public getClient(redisType: keyof TRedisSchema = 'master') {
