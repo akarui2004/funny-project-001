@@ -2,3 +2,4 @@
   [datasource.master]
     username = "postgres"
     password = "postgres"
+    database = "fund_project_dev"
