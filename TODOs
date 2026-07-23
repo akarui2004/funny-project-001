@@ -1,0 +1,4 @@
+- Tạo script để generate db config rồi nhét vào dist folder -> dist/config/sql.js
+- Implement model typescript để kế thừa cho Sequelize model
+- Implement migration typescript và sau đó compile ra file js thì mới run được sequelize-cli; tương tự cho seeders
+-> Mục tiêu là kế thừa typescript và có khả năng code bằng typescript
