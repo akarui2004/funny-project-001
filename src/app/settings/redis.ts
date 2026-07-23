@@ -44,8 +44,7 @@ class Redis {
     });
 
     try {
-      // 👈 Await the actual connection phase
-      await client.connect();
+      await client.connect(); // Await the actual connection phase
       this.clients[redisType] = client;
     } catch (error: any) {
       console.error(ansis.redBright.bold(`❌ [Redis:${typeKey}] Failed to connect to Redis.`));
