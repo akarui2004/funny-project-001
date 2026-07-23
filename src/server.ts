@@ -10,10 +10,10 @@ import { logger } from './utils';
   app.use(express.json());
 
   // Redis storage initialize
-  appRedis.initialize();
+  await appRedis.initialize();
 
   // Redis queue initialize
-  appRedis.initialize('queue');
+  await appRedis.initialize('queue');
 
   // Database initialize
   await appDb.initialize();
