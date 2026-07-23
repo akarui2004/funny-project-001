@@ -1,5 +1,5 @@
 import express from 'express';
-import { appConfig, appRedis } from 'src/app';
+import { appConfig, appDb, appRedis } from 'src/app';
 import { logger } from './utils';
 
 (async () => {
@@ -16,6 +16,7 @@ import { logger } from './utils';
   appRedis.initialize('queue');
 
   // Database initialize
+  await appDb.initialize();
 
   app.listen(appPort, () => {
     logger.info(`Server running at port: ${appPort}`);

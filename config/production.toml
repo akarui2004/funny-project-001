@@ -1,5 +1,6 @@
 [datasource]
   [datasource.master]
+    database = "fund_project"
     [datasource.master.pool]
       max = 20
       min = 5

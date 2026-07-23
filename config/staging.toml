@@ -1,4 +1,5 @@
 [datasource]
   [datasource.master]
+    database = "fund_project_qa"
     [datasource.master.pool]
       min = 5

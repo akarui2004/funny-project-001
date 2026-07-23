@@ -12,11 +12,12 @@ const DATASOURCE_MASTER_POOL = z.object({
   idle: z.coerce.number().default(10000)
 });
 
-const DATASOURCE_MASTER = z.object({
+export const DATASOURCE_MASTER = z.object({
   dialect: z.string().default('postgres'),
   host: z.string().default('localhost'),
   port: z.coerce.number().default(5432),
   schema: z.string().optional().default('public'),
+  database: z.string().default('fund_project'),
   username: z.string(),
   password: z.string(),
   pool: DATASOURCE_MASTER_POOL,
