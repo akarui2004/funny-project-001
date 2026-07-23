@@ -16,7 +16,6 @@
     "resolveJsonModule": true,
 
     "sourceMap": true,
-    "incremental": true,
 
     "baseUrl": "./",
     "paths": {
