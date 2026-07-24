@@ -2,7 +2,7 @@ import ansis from 'ansis';
 import fs from 'fs';
 import path from 'path';
 import { appConfig } from 'src/app';
-import { Defaults, NODE_ENV } from 'src/constants';
+import { NODE_ENV } from 'src/constants';
 
 (async () => {
   const { username, password, dialect, schema, database, host, port } = appConfig.datasource.master;
