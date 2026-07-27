@@ -1,0 +1,14 @@
+import { DataTypes, QueryInterface } from 'sequelize';
+import { TableBlueprint } from 'src/utils';
+
+export default {
+  async up(queryInterface: QueryInterface): Promise<void> {
+    await TableBlueprint.table('{{ tableName }}')
+      .column() // Input the column description in here
+      .create(queryInterface);
+  },
+
+  async down(queryInterface: QueryInterface): Promise<void> {
+    await TableBlueprint.dropTable(queryInterface, '{{ tableName }}');
+  },
+};
