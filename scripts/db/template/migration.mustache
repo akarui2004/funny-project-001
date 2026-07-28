@@ -3,12 +3,17 @@ import { TableBlueprint } from 'src/utils';
 
 export default {
   async up(queryInterface: QueryInterface): Promise<void> {
-    await TableBlueprint.table('{{ tableName }}')
+    await TableBlueprint.table('{{tableName}}')
+      {{#columns}}
       .column() // Input the column description in here
+      {{/columns}}
+      {{^columns}}
+      // place the column you want in here
+      {{/columns}}
       .create(queryInterface);
   },
 
   async down(queryInterface: QueryInterface): Promise<void> {
-    await TableBlueprint.dropTable(queryInterface, '{{ tableName }}');
+    await TableBlueprint.dropTable(queryInterface, '{{tableName}}');
   },
 };

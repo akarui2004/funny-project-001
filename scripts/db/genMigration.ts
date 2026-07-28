@@ -1,0 +1,1 @@
+// This script is using to create the migration file base on the template file: 
