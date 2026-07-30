@@ -1,20 +1,19 @@
-import { DataTypes, QueryInterface } from 'sequelize';
-import { TableBlueprint } from 'src/utils';
-
-//temporary testing
+import { QueryInterface } from 'sequelize';
+import { MigrationUtils } from 'src/utils';
 
 export default {
   async up(queryInterface: QueryInterface): Promise<void> {
-    await TableBlueprint.table('users')
-      .column('name', DataTypes.STRING, { allowNull: false })
-      .create(queryInterface);
-
-    // await queryInterface.addColumn();
-    // await queryInterface.removeColumn();
-    // await queryInterface.changeColumn();
+    await queryInterface.createTable('users', {
+      id: MigrationUtils.primaryKey(),
+      username: MigrationUtils.genericString(true),
+      password: MigrationUtils.genericString(true),
+      role: MigrationUtils.enumType(['admin', 'sub-admin', 'member', 'guest'], false, 'guest'),
+      ...MigrationUtils.softDeleteColumns,
+      ...MigrationUtils.timestampColumns
+    });
   },
 
   async down(queryInterface: QueryInterface): Promise<void> {
-    await TableBlueprint.dropTable(queryInterface, 'users');
+    await queryInterface.dropTable('users');
   },
 };

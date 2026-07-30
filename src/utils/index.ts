@@ -1,2 +1,2 @@
 export * from './logger';
-export * from './table-blueprint';
+export * as MigrationUtils from './migration';
