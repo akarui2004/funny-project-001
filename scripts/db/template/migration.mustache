@@ -1,0 +1,19 @@
+import { QueryInterface } from 'sequelize';
+import { MigrationUtils } from 'src/utils';
+
+export default {
+  async up(queryInterface: QueryInterface): Promise<void> {
+    await queryInterface.createTable('{{table}}', {
+      id: MigrationUtils.primaryKey(),
+      // Add these columns in here
+      {{#useSoftDelete}}
+      ...MigrationUtils.softDeleteColumns,
+      {{/useSoftDelete}}
+      ...MigrationUtils.timestampColumns
+    });
+  },
+
+  async down(queryInterface: QueryInterface): Promise<void> {
+    await queryInterface.dropTable('{{table}}');
+  },
+};
