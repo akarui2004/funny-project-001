@@ -1,11 +1,11 @@
 import ansis from 'ansis';
 import { Command } from 'commander';
-import { plural } from 'pluralize';
-import { BaseCli } from 'scripts/base-cli';
-import path from 'path';
+import { format } from 'date-fns';
 import fs from 'fs';
 import Mustache from 'mustache';
-import { format } from 'date-fns';
+import path from 'path';
+import { plural } from 'pluralize';
+import { BaseCli } from 'scripts/base-cli';
 
 interface MigrationOptions {
   columns?: string;
