@@ -13,7 +13,7 @@
     "db:migrate": "sequelize-cli db:migrate",
     "db:migrate:undo": "sequelize-cli db:migrate:undo",
     "db:seed:all": "sequelize-cli db:seed:all",
-    "migration:create": "yarn script ./scripts/db/createMigration",
+    "migration:create": "yarn script ./scripts/db/migration-cli create",
     "seeder:create": "yarn script ./scripts/db/createSeeder",
     "clean": "rimraf ./dist"
   },

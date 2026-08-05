@@ -1,1 +1,0 @@
-// Example input for migration script: yarn migration:create <table_name> --columns=column_name:string,column_name:interger:index --softDelete=true
