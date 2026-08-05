@@ -1,6 +1,11 @@
 import ansis from 'ansis';
 import { Command } from 'commander';
+import { plural } from 'pluralize';
 import { BaseCli } from 'scripts/base-cli';
+import path from 'path';
+import fs from 'fs';
+import Mustache from 'mustache';
+import { format } from 'date-fns';
 
 interface MigrationOptions {
   columns?: string;
@@ -23,14 +28,35 @@ class MigrationCli extends BaseCli {
   public async execute(tableName: string, options: MigrationOptions): Promise<void> {
     console.log(ansis.blueBright.bold(`Creating migration for table: ${tableName}`));
 
+    const pluralTableName = plural(tableName.toLowerCase());
+
     const parsedColumns = options.columns
       ? options.columns.split(',').map((col) => col.trim())
       : [];
 
-    console.log('Columns: ', parsedColumns);
-    console.log('Soft Delete: ', options.softDelete);
+    const params = {
+      table: pluralTableName,
+      softDelete: options.softDelete,
+    }
+    const renderTemplate = Mustache.render(this.getMigrationTemplateContent(), params);
 
-    // TODO: The rest of the code will be here
+    const timestamp = format(new Date(), 'yyyyMMddHHmmss');
+    const migrationFileName = `${timestamp}-create-${pluralTableName}.ts`;
+
+    const exposeMigrationPath = path.resolve(`src/db/migrations/${migrationFileName}`);
+    fs.mkdirSync(path.dirname(exposeMigrationPath), { recursive: true });
+    fs.writeFileSync(exposeMigrationPath, renderTemplate, 'utf-8');
+
+    console.log(ansis.greenBright.bold(`Migration created successfully: ${exposeMigrationPath}`));
+  }
+
+  private getMigrationTemplateContent() {
+    const filePath = path.resolve(__dirname, 'template', 'migration.mustache');
+    try {
+      return fs.readFileSync(filePath, 'utf-8');
+    } catch (error: any) {
+      throw new Error(`Cannot read migration template at ${filePath}`, { cause: error });
+    }
   }
 }
 

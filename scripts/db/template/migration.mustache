@@ -6,9 +6,9 @@ export default {
     await queryInterface.createTable('{{table}}', {
       id: MigrationUtils.primaryKey(),
       // Add these columns in here
-      {{#useSoftDelete}}
+      {{#softDelete}}
       ...MigrationUtils.softDeleteColumns,
-      {{/useSoftDelete}}
+      {{/softDelete}}
       ...MigrationUtils.timestampColumns
     });
   },
