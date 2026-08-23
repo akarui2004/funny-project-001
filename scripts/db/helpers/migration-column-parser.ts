@@ -25,7 +25,7 @@ export interface ParsedField {
   isUnique: boolean;
   isIndex: boolean;
   isUnsigned: boolean;
-  defaultValue: string | number | null;
+  defaultValue: string | number | boolean | null;
 }
 
 /**

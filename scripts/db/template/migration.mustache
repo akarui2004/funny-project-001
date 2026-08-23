@@ -5,7 +5,9 @@ export default {
   async up(queryInterface: QueryInterface): Promise<void> {
     await queryInterface.createTable('{{table}}', {
       id: MigrationUtils.primaryKey(),
-      // Add these columns in here
+      {{#migrationColumns}}
+      {{{.}}},
+      {{/migrationColumns}}
       {{#softDelete}}
       ...MigrationUtils.softDeleteColumns,
       {{/softDelete}}

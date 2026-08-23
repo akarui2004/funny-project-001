@@ -1,4 +1,4 @@
-import { AbstractDataTypeConstructor, DataType, DataTypes, ModelAttributeColumnOptions, ModelAttributeColumnReferencesOptions } from 'sequelize'
+import { AbstractDataTypeConstructor, DataType, DataTypes, ModelAttributeColumnOptions, ModelAttributeColumnReferencesOptions, TextLength } from 'sequelize'
 import BigNumber from 'bignumber.js';
 
 export const primaryKey = (dataType: DataType = DataTypes.UUID, options: Partial<ModelAttributeColumnOptions> = {}): ModelAttributeColumnOptions => ({

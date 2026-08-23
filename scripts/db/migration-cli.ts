@@ -6,10 +6,18 @@ import Mustache from 'mustache';
 import path from 'path';
 import { plural } from 'pluralize';
 import { BaseCli } from 'scripts/base-cli';
+import { MigrationColumnParser } from './helpers/migration-column-parser';
+import { MigrationColumnRenderer } from './helpers/migration-column-renderer';
 
 interface MigrationOptions {
   columns?: string;
   softDelete?: boolean;
+}
+
+interface MustacheParam {
+  table: string;
+  softDelete: boolean | undefined;
+  migrationColumns: string[];
 }
 
 class MigrationCli extends BaseCli {
@@ -30,13 +38,13 @@ class MigrationCli extends BaseCli {
 
     const pluralTableName = plural(tableName.toLowerCase());
 
-    const parsedColumns = options.columns
-      ? options.columns.split(',').map((col) => col.trim())
-      : [];
+    const parsedColumns = MigrationColumnParser.execute(options.columns ?? '');
+    const columnsStatement = MigrationColumnRenderer.execute(parsedColumns);
 
-    const params = {
+    const params: MustacheParam = {
       table: pluralTableName,
       softDelete: options.softDelete,
+      migrationColumns: columnsStatement,
     }
     const renderTemplate = Mustache.render(this.getMigrationTemplateContent(), params);
 
