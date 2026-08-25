@@ -1,71 +1,124 @@
-import { ParsedField } from './migration-column-parser';
+import { FieldMetadata, ParsedField } from './migration-column-parser';
 
-export type SegmentOptionType = string | number | boolean;
+/**
+ * A single argument emitted into a `MigrationUtils.X(...)` call expression.
+ *  - `boolean` / `number` render as JS literals (`true`, `10`).
+ *  - `string` is JSON-serialized so quotes/escapes stay valid in the generated source.
+ */
+type SegmentOption = string | number | boolean;
 
+interface TypeRenderer {
+  /** Name of the helper on `MigrationUtils` to invoke. */
+  method: string;
+  /** Push the typed args for this column kind into `opts`, in declaration order. */
+  pushArgs: (field: ParsedField, opts: SegmentOption[]) => void;
+}
+
+/** True when the column is required (i.e. NOT nullable). */
+const requiredFlag = (isNullable: boolean): boolean => isNullable === false;
+
+/**
+ * Render a `ParsedField[]` (from `MigrationColumnParser`) into one source line per
+ * column, ready for Mustache injection into `migration.mustache`.
+ *
+ * Example output line:
+ *   `price: MigrationUtils.decimal(true, 10, 2, BigNumber(0))`
+ *
+ * Unknown column types throw so a malformed schema never produces a partial file.
+ */
 export class MigrationColumnRenderer {
   public static execute(parsedColumns: ParsedField[]): string[] {
-    const migrationStatements: string[] = [];
-
-    for (const parsedColumn of parsedColumns) {
-      const segment: string[] = this.buildStatement(parsedColumn, [`${parsedColumn.name}:`]);
-
-      migrationStatements.push(segment.join(' '));
-    }
-
-    return migrationStatements;
+    return parsedColumns.map((column) => `${column.name}: ${MigrationColumnRenderer.render(column)}`);
   }
 
-  public static buildStatement(parsedColumn: ParsedField, segment: string[]) {
-    const { type, metadata, isNullable, isUnique, isIndex, isUnsigned, defaultValue } = parsedColumn;
-    const { length, precision, scale, enumValues } = metadata ?? {};
-
-    const segmentOpts: SegmentOptionType[] = [];
-    if (isNullable === false) segmentOpts.push('true');
-
-    switch (type) {
-      case 'string':
-        if (length) segmentOpts.push(Number(length));
-        if (defaultValue) segmentOpts.push(`'${defaultValue}'`);
-
-        segment.push(`MigrationUtils.genericString(${segmentOpts.join(',')})`);
-        break;
-      case 'text':
-        segment.push(`MigrationUtils.text(${segmentOpts.join(',')})`);
-        break;
-      case 'uuid':
-        if (isUnique) segmentOpts.push(`'${isUnique}'`);
-
-        segment.push(`MigrationUtils.uuid(${segmentOpts.join(',')})`);
-        break;
-      case 'date':
-        if (defaultValue) segmentOpts.push(`'${defaultValue}'`);
-
-        segment.push(`MigrationUtils.date(${segmentOpts.join(',')})`);
-        break;
-      case 'dateTime':
-        if (defaultValue) segmentOpts.push(`'${defaultValue}'`);
-
-        segment.push(`MigrationUtils.datetime(${segmentOpts.join(',')})`);
-        break;
-      case 'decimal':
-      case 'float':
-      case 'double':
-        break;
-      case 'integer':
-        break;
-      case 'bigInteger':
-        break;
-      case 'enum':
-        if (enumValues && enumValues?.length > 0) segmentOpts.unshift(`${JSON.stringify(enumValues).replaceAll('"', "'")}`);
-        if (isNullable === true) segmentOpts.push('false');
-        if (defaultValue) segmentOpts.push(`'${defaultValue}'`);
-
-        segment.push(`MigrationUtils.enumType(${segmentOpts.join(',')})`);
-        break;
-      default:
-        throw new Error(`Unknown field type: ${type} at ${parsedColumn.name}`);
+  private static render(field: ParsedField): string {
+    const config = MigrationColumnRenderer.TYPES[field.type];
+    if (!config) {
+      throw new Error(`Unknown field type: ${field.type} at ${field.name}`);
     }
 
-    return segment;
+    const opts: SegmentOption[] = [];
+    config.pushArgs(field, opts);
+    return `MigrationUtils.${config.method}(${opts.join(',')})`;
   }
+
+  private static readonly TYPES: Record<string, TypeRenderer> = {
+    string: {
+      method: 'genericString',
+      pushArgs: ({ isNullable, metadata, defaultValue }, opts) => {
+        if (requiredFlag(isNullable)) opts.push(true);
+        if (metadata?.length) opts.push(metadata.length);
+        if (defaultValue != null) opts.push(JSON.stringify(defaultValue));
+      },
+    },
+    text: {
+      method: 'text',
+      pushArgs: ({ isNullable }, opts) => {
+        if (requiredFlag(isNullable)) opts.push(true);
+      },
+    },
+    uuid: {
+      method: 'uuid',
+      pushArgs: ({ isNullable, isUnique }, opts) => {
+        if (requiredFlag(isNullable)) opts.push(true);
+        if (isUnique) opts.push(true);
+      },
+    },
+    date: {
+      method: 'date',
+      pushArgs: ({ isNullable, defaultValue }, opts) => {
+        if (requiredFlag(isNullable)) opts.push(true);
+        if (defaultValue != null) opts.push(JSON.stringify(defaultValue));
+      },
+    },
+    dateTime: {
+      method: 'datetime',
+      pushArgs: ({ isNullable, defaultValue }, opts) => {
+        if (requiredFlag(isNullable)) opts.push(true);
+        if (defaultValue != null) opts.push(JSON.stringify(defaultValue));
+      },
+    },
+    decimal: sharedDecimal(),
+    float: sharedDecimal(),
+    double: sharedDecimal(),
+    integer: sharedWithDefault('integer'),
+    bigInteger: sharedWithDefault('bigInteger'),
+    enum: {
+      method: 'enumType',
+      pushArgs: ({ metadata, isNullable, defaultValue }, opts) => {
+        opts.unshift(JSON.stringify(metadata?.enumValues ?? []));
+        opts.push(!isNullable);
+        if (defaultValue != null) opts.push(JSON.stringify(defaultValue));
+      },
+    },
+  };
+}
+
+/**
+ * Shared config for decimal/float/double — all take `(required, precision, scale, BigNumber(default))`.
+ * The required flag is always emitted so positional args stay aligned even when the column is nullable.
+ * Default value is wrapped with `BigNumber(...)` to match `MigrationUtils.decimal`'s call site,
+ * which expects a BigNumber instance, not a primitive number.
+ */
+function sharedDecimal(): TypeRenderer {
+  return {
+    method: 'decimal',
+    pushArgs: ({ isNullable, metadata, defaultValue }: ParsedField & { metadata: FieldMetadata | null }, opts) => {
+      opts.push(!isNullable);
+      if (metadata?.precision != null) opts.push(metadata.precision);
+      if (metadata?.scale != null) opts.push(metadata.scale);
+      if (defaultValue != null) opts.push(`BigNumber(${defaultValue})`);
+    },
+  };
+}
+
+/** Shared config for integer / bigInteger — both take `(required, default)`. */
+function sharedWithDefault(method: string): TypeRenderer {
+  return {
+    method,
+    pushArgs: ({ isNullable, defaultValue }, opts) => {
+      opts.push(!isNullable);
+      if (defaultValue != null) opts.push(defaultValue);
+    },
+  };
 }
