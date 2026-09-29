@@ -30,7 +30,8 @@ for implementation details.
 - Sequelize CLI configuration: `.sequelizerc` and `src/config/database.mts`
 - Database migrations: `src/db/migrations/`
 - Shared migration column helpers: `src/utils/migration/blueprint.ts`
-- Logging: `src/utils/logger.ts` and `src/constants/logging.ts`
+- Logging: `src/utils/logger.ts` and `src/constants/logging.ts`; use
+  `createModuleLogger('<module>')` so lines are tagged, not `console.log`
 
 ## Configuration Contract
 
