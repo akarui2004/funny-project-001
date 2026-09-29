@@ -72,9 +72,9 @@ Before touching any code, **read the docs in this order**. Each doc builds on th
 
 | # | Doc | Why read it first |
 |---|-----|-------------------|
-| 1 | [docs/configuration.md](docs/configuration.md) | Master reference for the layered TOML config system (`base.toml` → `<env>.toml` → `<env>.local.toml`). Covers the full schema: `env`, `datasource`, `redis`, `logging`. **Read this first** — every other doc assumes you understand the layered override order. |
+| 1 | [docs/configuration.md](docs/configuration.md) | Master reference for the layered TOML config system (`base.toml` → `<env>.toml` → `<env>.local.toml`). Covers the full schema: `env`, `datasource`, `redis`. **Read this first** — every other doc assumes you understand the layered override order. |
 | 2 | [docs/environment-configuration.md](docs/environment-configuration.md) | Explains how `NODE_ENV` and `.env` files are loaded via `dotenv`. Tells you which env vars exist and how to set them locally. |
-| 3 | [docs/database-config-loader.md](docs/database-config-loader.md) | Deep-dive on `src/config/database.mts` — the file Sequelize CLI loads through `.sequelizerc`. Explains how the layered TOML config gets merged into a Sequelize-CLI-shaped object, validation, and failure modes. |
+| 3 | [docs/database-config-loader.md](docs/database-config-loader.md) | Deep-dive on `src/db/sequelize-cli-config.cjs`, the file Sequelize CLI loads through `.sequelizerc`. Explains how it reuses the runtime config loader, why it is `.cjs`, and its failure modes. |
 | 4 | [docs/sequelize-and-sequelize-cli-relationship.md](docs/sequelize-and-sequelize-cli-relationship.md) | The big-picture diagram showing how `sequelize-cli` (dev-time) and the `sequelize` library (run-time) share the same `config/`, `models/`, and `migrations/` folders. Read this to understand *where* a change belongs. |
 
 ### Quick mental model
@@ -92,8 +92,8 @@ Before touching any code, **read the docs in this order**. Each doc builds on th
                        ▼
 ┌─────────────────────────────────────────────────────────┐
 │  docs/database-config-loader.md                         │
-│  → how src/config/database.mts turns TOML into         │
-│    a Sequelize CLI config object                        │
+│  → how src/db/sequelize-cli-config.cjs reuses the app   │
+│    config to build the Sequelize CLI config object      │
 └──────────────────────┬──────────────────────────────────┘
                        ▼
 ┌─────────────────────────────────────────────────────────┐
