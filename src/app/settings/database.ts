@@ -1,7 +1,33 @@
-import ansis from 'ansis';
 import { Dialect, Sequelize, Options as SequelizeOptions } from 'sequelize';
-import { appConfig } from 'src/app';
+import appConfig from 'src/app/config';
+import { createModuleLogger } from 'src/utils/logger';
 import { TDatasourceSchema, TMasterDatasourceSchema } from '../config/config.type';
+
+const log = createModuleLogger('db');
+
+/**
+ * Maps a TOML datasource entry to Sequelize options.
+ * Shared by the runtime connection and the Sequelize CLI config (src/config/database.ts),
+ * so both connect with the same settings (pool, ssl, timeouts).
+ */
+export const buildSequelizeOptions = (datasource: TMasterDatasourceSchema): SequelizeOptions => {
+  const {
+    dialect, host, port,
+    schema, database,
+    username, password,
+    pool: poolOptions, option: otherOptions
+  } = datasource;
+  const { min, max, idle, acquireTimeout: acquire } = poolOptions;
+  const { ssl, connectionTimeout: connectTimeout } = otherOptions;
+  return {
+    dialect: dialect as Dialect,
+    host, port,
+    schema, database,
+    username, password,
+    pool: { min, max, acquire, idle },
+    dialectOptions: { ssl, connectTimeout },
+  };
+};
 
 class Database {
   private dbConfig: TDatasourceSchema;
@@ -18,34 +44,15 @@ class Database {
     }
 
     try {
-      const sequelize = new Sequelize(this.buildSequelizeOption(connType));
+      const sequelize = new Sequelize(buildSequelizeOptions(this.dbConfig[connType]));
       await sequelize.authenticate();
 
       this.dbClients[connType] = sequelize;
-      console.log(ansis.greenBright.bold(`✅ DB [${String(connType)}] connection established successfully. 🚀`));
+      log.info(`✅ [${connType}] Connection established`);
     } catch (error: any) {
-      console.error(ansis.red.bold(`❌ Unable to connect to DB [${String(connType)}]:`), error.message);
+      log.error(`❌ [${connType}] Unable to connect: ${error.message}`);
       // Rethrow so the application boot process knows the DB failed to connect
       throw error;
-    }
-  }
-
-  private buildSequelizeOption(connType: keyof TDatasourceSchema = 'master'): SequelizeOptions {
-    const {
-      dialect, host, port,
-      schema, database,
-      username, password,
-      pool: poolOptions, option: otherOptions
-    } = this.dbConfig[connType];
-    const { min, max, idle, acquireTimeout: acquire } = poolOptions;
-    const { ssl, connectionTimeout: connectTimeout } = otherOptions;
-    return {
-      dialect: dialect as Dialect,
-      host, port,
-      schema, database,
-      username, password,
-      pool: { min, max, acquire, idle },
-      dialectOptions: { ssl, connectTimeout },
     }
   }
 
@@ -61,14 +68,9 @@ class Database {
     try {
       await client.close();
       delete this.dbClients[connType];
-      console.log(
-        ansis.yellow.bold(`🔌 DB [${String(connType)}] connection closed successfully.`)
-      );
+      log.info(`🔌 [${connType}] Connection closed`);
     } catch (error: any) {
-      console.error(
-        ansis.red.bold(`❌ Error disconnecting DB [${String(connType)}]:`),
-        error.message
-      );
+      log.error(`❌ [${connType}] Error disconnecting: ${error.message}`);
       throw error;
     }
   }
