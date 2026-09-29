@@ -7,7 +7,7 @@
 // ts-node + tsconfig-paths, which resolve the `src/*` alias.
 const { default: appConfig } = require('src/app/config');
 const { NODE_ENV } = require('src/constants');
-const { buildSequelizeOptions } = require('src/app/settings/database');
+const { buildSequelizeOptions } = require('src/app/connections/database');
 
 module.exports = {
   [NODE_ENV]: buildSequelizeOptions(appConfig.datasource.master),

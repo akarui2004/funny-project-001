@@ -7,7 +7,7 @@ const log = createModuleLogger('db');
 
 /**
  * Maps a TOML datasource entry to Sequelize options.
- * Shared by the runtime connection and the Sequelize CLI config (src/config/database.ts),
+ * Shared by the runtime connection and the Sequelize CLI config (src/db/sequelize-cli-config.cjs),
  * so both connect with the same settings (pool, ssl, timeouts).
  */
 export const buildSequelizeOptions = (datasource: TMasterDatasourceSchema): SequelizeOptions => {
@@ -26,6 +26,8 @@ export const buildSequelizeOptions = (datasource: TMasterDatasourceSchema): Sequ
     username, password,
     pool: { min, max, acquire, idle },
     dialectOptions: { ssl, connectTimeout },
+    // Route SQL through winston instead of Sequelize's default console.log; visible with LOG_LEVEL=debug
+    logging: (sql: string) => log.debug(sql),
   };
 };
 
@@ -86,13 +88,14 @@ class Database {
     }
   }
 
-  // return the db client
-  public get db(): Sequelize | null {
-    return this.dbClients.master ?? null;
-  }
+  // Same contract as appRedis.getClient(): throw instead of returning null, so callers never null-check
+  public getDb(connType: keyof TDatasourceSchema = 'master'): Sequelize {
+    const client = this.dbClients[connType];
+    if (!client) {
+      throw new Error(`[DB] Connection '${String(connType)}' is not initialized. Call appDb.initialize() first.`);
+    }
 
-  public getDb(connType: keyof TDatasourceSchema): Sequelize | null {
-    return this.dbClients[connType] ?? null;
+    return client;
   }
 }
 

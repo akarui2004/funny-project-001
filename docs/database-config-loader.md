@@ -1,17 +1,17 @@
-# Database Config Loader (`src/config/database.cjs`)
+# Database Config Loader (`src/db/sequelize-cli-config.cjs`)
 
 ## Overview
 
-`src/config/database.cjs` is the config file **Sequelize CLI** loads (`db:migrate`, `db:seed`, …).
+`src/db/sequelize-cli-config.cjs` is the config file **Sequelize CLI** loads (`db:migrate`, `db:seed`, …).
 It does not read TOML itself. It reuses the application's config loader, so the CLI and the running
 app always connect with the **same** settings:
 
 ```mermaid
 flowchart LR
     TOML["config/*.toml"] --> AppConfig["src/app/config<br/>(defu deep merge + Zod)"]
-    AppConfig --> Builder["buildSequelizeOptions()<br/>src/app/settings/database.ts"]
+    AppConfig --> Builder["buildSequelizeOptions()<br/>src/app/connections/database.ts"]
     Builder --> Runtime["appDb.initialize()<br/>(running app)"]
-    Builder --> CLI["src/config/database.cjs<br/>(Sequelize CLI)"]
+    Builder --> CLI["src/db/sequelize-cli-config.cjs<br/>(Sequelize CLI)"]
 ```
 
 One loader, one mapping: pool, SSL, and timeouts set in TOML apply to migrations too.
@@ -27,7 +27,7 @@ require('ts-node/register');
 require('tsconfig-paths/register');
 
 module.exports = {
-  'config': path.resolve('src', 'config', 'database.cjs'),
+  'config': path.resolve('src', 'db', 'sequelize-cli-config.cjs'),
   // models-path, seeders-path, migrations-path ...
 };
 ```

@@ -1,5 +1,5 @@
 import { QueryInterface } from 'sequelize';
-import { MigrationUtils } from 'src/utils';
+import * as MigrationUtils from 'src/db/migration-blueprint';
 
 export default {
   async up(queryInterface: QueryInterface): Promise<void> {

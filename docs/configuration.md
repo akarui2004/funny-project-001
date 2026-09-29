@@ -9,7 +9,6 @@ This document describes the configuration options available in `base.toml`.
 | `[env]` | Server environment settings |
 | `[datasource]` | Database connection configuration (supports multiple named sources) |
 | `[redis]` | Redis connection configuration (supports multiple named instances) |
-| `[logging]` | Logging configuration |
 
 ---
 
@@ -78,33 +77,6 @@ Connection options for Redis.
 | `connectionTimeout` | number | `60000` | The maximum time (ms) to wait for a connection to be established. |
 | `keepAlive` | number | `30000` | Idle connection timeout (ms). |
 | `maxRetriesPerRequest` | number | `5` | Number of retries for a failed command. |
-
----
-
-## [logging]
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `path` | string | `"logs"` | The directory where log files will be stored. |
-| `baseFileName` | string | `"app"` | The base name for log files. |
-| `level` | string | `"info"` | The default log level (`trace`, `debug`, `info`, `warn`, `error`, `fatal`). |
-
-### [logging.rotatingFile]
-
-Log rotation settings.
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `frequency` | string | `"daily"` | How often to rotate log files (`daily`, `hourly`). |
-| `size` | string | `"100m"` | Maximum size of a log file before rotation (e.g., `"100m"`, `"1g"`). |
-
-### [logging.rotatingFile.limit]
-
-Limits for log file retention.
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `count` | number | `30` | Maximum number of log files to keep. |
 
 ---
 
@@ -221,15 +193,6 @@ config/.*.local.toml
     keepAlive = 30000
     maxRetriesPerRequest = 5
 
-[logging]
-  path = "logs"
-  baseFileName = "app"
-  level = "info"
-  [logging.rotatingFile]
-    frequency = "daily"
-    size = "100m"
-    [logging.rotatingFile.limit]
-      count = 30
 ```
 
 ### Production
@@ -267,18 +230,11 @@ config/.*.local.toml
     keepAlive = 30000
     maxRetriesPerRequest = 3
 
-[logging]
-  path = "/var/log/app"
-  baseFileName = "app"
-  level = "warn"
-  [logging.rotatingFile]
-    frequency = "daily"
-    size = "1g"
-    [logging.rotatingFile.limit]
-      count = 14
 ```
 
 ## Notes
+
+- Logging is **not** configured in TOML. The logger is created before the config loads (the config loader logs through it), so it reads `LOG_*` environment variables instead. See `.env.example` and `src/constants/logging.ts`.
 
 - `[datasource]` (singular) holds one or more named database connections; there is no top-level `source` selector — pick the named source your application code expects (e.g., `master`).
 - `[redis]` has no top-level `source` selector; the application code chooses which named instance to use (`master`, `queue`, etc.).

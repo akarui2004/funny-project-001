@@ -4,7 +4,7 @@ const path = require('path');
 
 // using mts to ignore the warning MODULE_TYPELESS_PACKAGE_JSON when running the yarn db:migrate
 module.exports = {
-  'config': path.resolve('src', 'config', 'database.cjs'),
+  'config': path.resolve('src', 'db', 'sequelize-cli-config.cjs'),
   'models-path': path.resolve('src', 'db', 'models'),
   'seeders-path': path.resolve('src', 'db', 'seeders'),
   'migrations-path': path.resolve('src', 'db', 'migrations'),
