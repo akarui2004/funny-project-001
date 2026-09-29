@@ -67,5 +67,5 @@ automated test suite currently; do not claim tests passed based on the build.
 - `src/server.ts` currently exposes no HTTP routes.
 - Startup requires reachable PostgreSQL and both Redis instances.
 - `scripts/db/genMigration.ts` is currently a placeholder.
-- `INSTALLATION.md` contains older paths and logging references; prefer the
-  current source, `package.json`, and the `docs/` configuration guides.
+- `yarn migration:create` and `yarn seeder:create` point to scripts that do
+  not exist yet.
