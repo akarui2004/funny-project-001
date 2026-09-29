@@ -18,8 +18,8 @@ export const DATASOURCE_MASTER = z.object({
   port: z.coerce.number().default(5432),
   schema: z.string().optional().default('public'),
   database: z.string().default('fund_project'),
-  username: z.string(),
-  password: z.string(),
+  username: z.string().min(1, 'username is required (set it in <env>.toml or <env>.local.toml)'),
+  password: z.string().min(1, 'password is required (set it in <env>.toml or <env>.local.toml)'),
   pool: DATASOURCE_MASTER_POOL,
   option: DATASOURCE_MASTER_OPTIONS
 });

@@ -27,7 +27,8 @@ for implementation details.
 - Configuration schemas: `src/app/config/schema/`
 - Runtime database connections: `src/app/settings/database.ts`
 - Runtime Redis connections: `src/app/settings/redis.ts`
-- Sequelize CLI configuration: `.sequelizerc` and `src/config/database.mts`
+- Sequelize CLI configuration: `.sequelizerc` and `src/config/database.cjs`
+  (reuses the runtime config loader and `buildSequelizeOptions`)
 - Database migrations: `src/db/migrations/`
 - Shared migration column helpers: `src/utils/migration/blueprint.ts`
 - Logging: `src/utils/logger.ts` and `src/constants/logging.ts`; use
@@ -42,8 +43,8 @@ config/base.toml -> config/<NODE_ENV>.toml -> config/<NODE_ENV>.local.toml
 ```
 
 The runtime loader validates `env`, `datasource.master`, `redis.master`, and
-`redis.queue` with Zod. The Sequelize CLI loader reads only
-`datasource.master`. See `docs/configuration.md` and
+`redis.queue` with Zod. The Sequelize CLI config reuses that loader and
+exports only `datasource.master`. See `docs/configuration.md` and
 `docs/database-config-loader.md` for the full contract.
 
 ## Verification
