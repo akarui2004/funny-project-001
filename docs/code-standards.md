@@ -41,9 +41,9 @@ this document is silent.
 - Keep secrets in `.env` or ignored `config/<environment>.local.toml` files.
   Never place credentials in committed TOML, source, logs, or documentation.
 - Preserve the merge order `base -> environment -> environment.local`.
-- Sequelize CLI configuration lives in `src/config/database.cjs` and reuses
+- Sequelize CLI configuration lives in `src/db/sequelize-cli-config.cjs` and reuses
   the runtime loader; change connection options in `buildSequelizeOptions`
-  (`src/app/settings/database.ts`) so the app and CLI stay in sync.
+  (`src/app/connections/database.ts`) so the app and CLI stay in sync.
 
 ## Express And Startup
 
@@ -62,7 +62,7 @@ this document is silent.
 
 - Treat applied migrations as immutable. Create a new migration for schema
   changes and provide both `up` and `down` operations where rollback is safe.
-- Reuse helpers from `src/utils/migration/blueprint.ts` for common columns so
+- Reuse helpers from `src/db/migration-blueprint.ts` for common columns so
   nullability, timestamps, and key types remain consistent.
 - Keep migration names timestamped and describe the schema change clearly.
 - Do not use `sync({ alter: true })` or `sync({ force: true })` as a substitute

@@ -1,113 +1,76 @@
-# Backend - Funny Project 001
+# Installation
 
-A Node.js/Express backend application with TypeScript, Sequelize ORM, and PostgreSQL.
+Backend for Funny Project 001: Node.js + Express 5 + TypeScript, PostgreSQL via Sequelize, Redis via ioredis.
 
-## Tech Stack
+## Prerequisites
 
-- **Runtime**: Node.js
-- **Language**: TypeScript 5.9
-- **Framework**: Express 5
-- **ORM**: Sequelize 6
-- **Database**: PostgreSQL
-- **Cache**: Redis
-- **Logging**: Pino
-- **Config**: TOML files with Zod validation
+- Node.js `22.22.0` (see `.node-version`)
+- Yarn 1.x (the repo uses `yarn.lock`)
+- PostgreSQL
+- Redis. The app connects to two logical DBs (`master` on db 0, `queue` on db 1); both default to `localhost:6379`
+
+## Setup
+
+```bash
+yarn install
+cp .env.example .env
+```
+
+`.env` holds `NODE_ENV` and the `LOG_*` logger settings (see `.env.example`).
+
+Put local database credentials in an ignored override file, not in committed TOML:
+
+```toml
+# config/development.local.toml
+[datasource.master]
+  username = "postgres"
+  password = "postgres"
+  database = "fund_project_dev"
+```
+
+Startup fails fast if `username` or `password` is empty. Config merge order and the full schema are in
+[docs/configuration.md](docs/configuration.md).
+
+## Database
+
+```bash
+yarn db:migrate          # apply migrations (src/db/migrations)
+yarn db:migrate:undo     # revert the last migration
+```
+
+`yarn db:migrate` does not load `.env`. For a non-development environment, set `NODE_ENV` in the shell:
+`NODE_ENV=staging yarn db:migrate`. See [docs/database-config-loader.md](docs/database-config-loader.md).
+
+## Running
+
+```bash
+yarn dev      # nodemon + ts-node, reloads on src/**/*.ts and *.toml changes
+yarn start    # clean, build, then run the compiled server.js
+```
+
+The server listens on `env.port` (default `3000`). Logs go to the console and to `logs/<prefix>-<date>.log`.
 
 ## Project Structure
 
 ```
-backend/
-├── config/                 # Configuration files
-│   ├── base.toml          # Base configuration (defaults)
-│   ├── development.toml  # Development overrides
-│   └── datasource/        # Datasource-specific configs
-├── src/
-│   ├── setup.ts         # App initialization
-│   ├── server.ts        # Entry point
-│   └── app/
-│       ├── config/     # Configuration loader
-│       ├── db/          # Database migrations & seeders
-│       ├── helpers/     # Helper utilities
-│       ├── loaders/     # Data loaders (datasource, etc.)
-│       ├── models/      # Database models
-│       ├── schemas/     # Zod schemas for validation
-│       └── utils/       # Utilities (logger, etc.)
-├── scripts/
-│   └── db/
-│       ├── createMigration.ts   # Migration generator script
-│       └── genConfig.ts        # Config generator script
-├── logs/                  # Application logs
-└── docs/                  # Documentation
+config/                  TOML config: base -> <env> -> <env>.local (ignored)
+src/
+├── server.ts            bootstrap() / shutdown()
+├── app/
+│   ├── config/          TOML loader + Zod schemas
+│   └── connections/     appDb (Sequelize), appRedis (ioredis)
+├── db/
+│   ├── migrations/
+│   ├── migration-blueprint.ts   column helpers for migrations
+│   └── sequelize-cli-config.cjs Sequelize CLI config (via .sequelizerc)
+├── constants/
+└── utils/logger.ts      winston logger, createModuleLogger()
+scripts/                 console (REPL) and DB script stubs
+docs/                    project docs, start with the reading order in README.md
 ```
 
-## Getting Started
+## Other Scripts
 
-### Prerequisites
-
-- Node.js 20+
-- PostgreSQL 14+
-- Redis 6+
-
-### Installation
-
-```bash
-npm install
-# or
-yarn install
-```
-
-### Configuration
-
-Copy `.env.example` to `.env` and update values:
-
-```bash
-cp .env.example .env
-```
-
-Edit `config/development.toml` with your database credentials:
-
-```toml
-[datasources.default]
-username = "your_username"
-password = "your_password"
-```
-
-### Running
-
-```bash
-# Development (with nodemon)
-npm run dev
-
-# Production
-npm start
-```
-
-The server runs on port 3000 by default.
-
-## Configuration System
-
-The app loads config from TOML files in this order:
-
-1. `config/base.toml` - Base defaults
-2. `config/{NODE_ENV}.toml` - Environment-specific (e.g., development.toml)
-3. `config/local.toml` - Local overrides (gitignored)
-
-### Database Migrations
-
-```bash
-# Generate a new migration
-npm run migration:create -- --name users_table
-```
-
-This creates a migration file in `src/app/db/migrations/`.
-
-## Scripts
-
-- `npm run script` - Run TypeScript scripts directly
-- `npm run migration:create` - Generate new migration files
-
-## API Documentation
-
-Refer to `docs/` directory for detailed documentation:
-- [Configuration Guide](docs/configuration.md)
-- [Environment Setup](docs/environment-configuration.md)
+- `yarn build`: compile TypeScript
+- `yarn console`: Node REPL with `.env` loaded
+- `yarn migration:create`, `yarn seeder:create`: planned, not implemented yet
