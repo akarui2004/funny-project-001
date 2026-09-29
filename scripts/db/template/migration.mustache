@@ -1,14 +1,16 @@
 import { QueryInterface } from 'sequelize';
-import { MigrationUtils } from 'src/utils';
+import * as MigrationUtils from 'src/db/migration-blueprint';
 
 export default {
   async up(queryInterface: QueryInterface): Promise<void> {
     await queryInterface.createTable('{{table}}', {
       id: MigrationUtils.primaryKey(),
-      // Add these columns in here
-      {{#useSoftDelete}}
+      {{#migrationColumns}}
+      {{{.}}},
+      {{/migrationColumns}}
+      {{#softDelete}}
       ...MigrationUtils.softDeleteColumns,
-      {{/useSoftDelete}}
+      {{/softDelete}}
       ...MigrationUtils.timestampColumns
     });
   },
