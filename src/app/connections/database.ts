@@ -26,6 +26,8 @@ export const buildSequelizeOptions = (datasource: TMasterDatasourceSchema): Sequ
     username, password,
     pool: { min, max, acquire, idle },
     dialectOptions: { ssl, connectTimeout },
+    // Route SQL through winston instead of Sequelize's default console.log; visible with LOG_LEVEL=debug
+    logging: (sql: string) => log.debug(sql),
   };
 };
 
