@@ -1,6 +1,6 @@
-import ansis from 'ansis';
 import RedisClient, { Redis as IORedisInstance } from 'ioredis';
-import { appConfig } from 'src/app';
+import appConfig from 'src/app/config';
+import { createModuleLogger } from 'src/utils/logger';
 import { TRedisSchema } from '../config/config.type';
 
 class Redis {
@@ -14,8 +14,8 @@ class Redis {
   }
 
   public async initialize(redisType: keyof TRedisSchema = 'master') {
-    const typeKey = String(redisType);
     const redisConn = this.redisConfig[redisType];
+    const log = createModuleLogger(`redis:${redisType}`);
 
     // Early exit if connection already exists
     if (this.clients[redisType]) {
@@ -34,20 +34,20 @@ class Redis {
     })
 
     client.on('connect', () => {
-      console.log(ansis.yellowBright.bold(`[Redis:${typeKey}] Connecting to ${redisConn.host}:${redisConn.port}...`));
+      log.info(`Connecting to ${redisConn.host}:${redisConn.port}...`);
     });
     client.on('ready', () => {
-      console.log(ansis.greenBright.bold(`✅ [Redis:${typeKey}] Connected and ready!`));
+      log.info(`✅ Connected and ready`);
     });
     client.on('error', (err: any) => {
-      console.error(ansis.redBright.bold(`❌ [Redis:${typeKey}] Error:`), err.message);
+      log.error(`❌ ${err.message}`);
     });
 
     try {
       await client.connect(); // Await the actual connection phase
       this.clients[redisType] = client;
     } catch (error: any) {
-      console.error(ansis.redBright.bold(`❌ [Redis:${typeKey}] Failed to connect to Redis.`));
+      log.error(`❌ Failed to connect`);
       throw error; // Rethrow so startup fails fast on bad credentials/unreachable host
     }
   }
@@ -62,8 +62,8 @@ class Redis {
   }
 
   public async disconnect(redisType: keyof TRedisSchema = 'master'): Promise<void> {
-    const typeKey = String(redisType);
     const client = this.clients[redisType];
+    const log = createModuleLogger(`redis:${redisType}`);
 
     // Early return because the client already disconnected
     if (!client) {
@@ -73,10 +73,10 @@ class Redis {
     try {
       // Attempt graceful quit
       await client.quit();
-      console.log(ansis.blueBright.bold(`🔌 [Redis:${typeKey}] Gracefully disconnected.`));
+      log.info(`🔌 Gracefully disconnected`);
     } catch (error) {
       // Force disconnect even the quiting failed
-      console.warn(ansis.yellow.bold(`⚠️ [Redis:${typeKey}] Graceful quit failed, forcing disconnect...`));
+      log.warn(`⚠️ Graceful quit failed, forcing disconnect...`);
       client.disconnect();
     } finally {
       delete this.clients[redisType];
@@ -91,7 +91,7 @@ class Redis {
       return;
     }
 
-    console.log(ansis.cyanBright.bold(`🔌 Closing all active Redis connections...`));
+    createModuleLogger('redis').info(`🔌 Closing all active connections...`);
 
     await Promise.allSettled(
       activeTypes.map((type) => this.disconnect(type))

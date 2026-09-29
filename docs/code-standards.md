@@ -41,8 +41,9 @@ this document is silent.
 - Keep secrets in `.env` or ignored `config/<environment>.local.toml` files.
   Never place credentials in committed TOML, source, logs, or documentation.
 - Preserve the merge order `base -> environment -> environment.local`.
-- When changing Sequelize CLI configuration, update both
-  `src/config/database.mts` and the related configuration documentation.
+- Sequelize CLI configuration lives in `src/config/database.cjs` and reuses
+  the runtime loader; change connection options in `buildSequelizeOptions`
+  (`src/app/settings/database.ts`) so the app and CLI stay in sync.
 
 ## Express And Startup
 
