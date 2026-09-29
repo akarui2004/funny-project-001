@@ -25,14 +25,16 @@ for implementation details.
 - Application startup: `src/server.ts`
 - Runtime configuration: `src/app/config/index.ts`
 - Configuration schemas: `src/app/config/schema/`
-- Runtime database connections: `src/app/settings/database.ts`
-- Runtime Redis connections: `src/app/settings/redis.ts`
-- Sequelize CLI configuration: `.sequelizerc` and `src/config/database.cjs`
+- Runtime database connections: `src/app/connections/database.ts`
+  (`appDb.getDb()` throws if not initialized, like `appRedis.getClient()`)
+- Runtime Redis connections: `src/app/connections/redis.ts`
+- Sequelize CLI configuration: `.sequelizerc` and `src/db/sequelize-cli-config.cjs`
   (reuses the runtime config loader and `buildSequelizeOptions`)
 - Database migrations: `src/db/migrations/`
-- Shared migration column helpers: `src/utils/migration/blueprint.ts`
+- Shared migration column helpers: `src/db/migration-blueprint.ts`
 - Logging: `src/utils/logger.ts` and `src/constants/logging.ts`; use
-  `createModuleLogger('<module>')` so lines are tagged, not `console.log`
+  `createModuleLogger('<module>')` so lines are tagged, not `console.log`.
+  Configured by `LOG_*` env vars, not TOML (the logger exists before config loads)
 
 ## Configuration Contract
 
@@ -67,5 +69,3 @@ automated test suite currently; do not claim tests passed based on the build.
 - `scripts/db/genMigration.ts` is currently a placeholder.
 - `INSTALLATION.md` contains older paths and logging references; prefer the
   current source, `package.json`, and the `docs/` configuration guides.
-- TOML logging settings described in `docs/configuration.md` are not currently
-  consumed by the logger; runtime logging uses `LOG_*` environment variables.
