@@ -1,28 +1,44 @@
-import { FieldMetadata, ParsedField } from './migration-column-parser';
+import { ParsedField } from './migration-column-parser';
 
 /**
- * A single argument emitted into a `MigrationUtils.X(...)` call expression.
- *  - `boolean` / `number` render as JS literals (`true`, `10`).
- *  - `string` is JSON-serialized so quotes/escapes stay valid in the generated source.
+ * A single argument emitted into a `MigrationUtils.X(...)` call expression, already
+ * rendered as JS source (e.g. `true`, `10`, `"abc"`, `5n`). `undefined` marks a skipped
+ * positional arg so the blueprint helper falls back to its own default.
  */
-type SegmentOption = string | number | boolean;
+type SourceArg = string | undefined;
 
 interface TypeRenderer {
   /** Name of the helper on `MigrationUtils` to invoke. */
   method: string;
-  /** Push the typed args for this column kind into `opts`, in declaration order. */
-  pushArgs: (field: ParsedField, opts: SegmentOption[]) => void;
+  /** Full positional arg list matching the helper's signature in `src/db/migration-blueprint.ts`. */
+  args: (field: ParsedField) => SourceArg[];
 }
 
-/** True when the column is required (i.e. NOT nullable). */
-const requiredFlag = (isNullable: boolean): boolean => isNullable === false;
+/** `required` flag is the inverse of the parsed `nullable` modifier. */
+const required = (field: ParsedField): SourceArg => String(!field.isNullable);
+
+/** JSON-quote string defaults so quotes/escapes stay valid in the generated source. */
+const stringDefault = (field: ParsedField): SourceArg =>
+  field.defaultValue == null ? undefined : JSON.stringify(String(field.defaultValue));
+
+/** Numeric default literal; `bigint` emits a `123n` literal to match `bigInteger(…, bigint)`. */
+const numericDefault = (field: ParsedField, bigint = false): SourceArg => {
+  const value = field.defaultValue;
+  if (value == null) return undefined;
+  if (typeof value !== 'number' || (bigint && !Number.isInteger(value))) {
+    throw new Error(`Invalid ${field.type} default for ${field.name}: "${value}"`);
+  }
+  return bigint ? `${value}n` : String(value);
+};
+
+const optionalNumber = (value?: number): SourceArg => (value == null ? undefined : String(value));
 
 /**
  * Render a `ParsedField[]` (from `MigrationColumnParser`) into one source line per
  * column, ready for Mustache injection into `migration.mustache`.
  *
  * Example output line:
- *   `price: MigrationUtils.decimal(true, 10, 2, BigNumber(0))`
+ *   `price: MigrationUtils.decimal(true, 10, 2, 0)`
  *
  * Unknown column types throw so a malformed schema never produces a partial file.
  */
@@ -37,88 +53,41 @@ export class MigrationColumnRenderer {
       throw new Error(`Unknown field type: ${field.type} at ${field.name}`);
     }
 
-    const opts: SegmentOption[] = [];
-    config.pushArgs(field, opts);
-    return `MigrationUtils.${config.method}(${opts.join(',')})`;
+    // Args are positional: keep `undefined` placeholders in the middle, drop trailing ones.
+    const args = config.args(field);
+    while (args.length && args[args.length - 1] === undefined) args.pop();
+    return `MigrationUtils.${config.method}(${args.map((arg) => arg ?? 'undefined').join(', ')})`;
   }
 
+  // Keys are lowercase: the parser lowercases every field type.
   private static readonly TYPES: Record<string, TypeRenderer> = {
     string: {
       method: 'genericString',
-      pushArgs: ({ isNullable, metadata, defaultValue }, opts) => {
-        if (requiredFlag(isNullable)) opts.push(true);
-        if (metadata?.length) opts.push(metadata.length);
-        if (defaultValue != null) opts.push(JSON.stringify(defaultValue));
-      },
+      args: (f) => [required(f), optionalNumber(f.metadata?.length), stringDefault(f)],
     },
-    text: {
-      method: 'text',
-      pushArgs: ({ isNullable }, opts) => {
-        if (requiredFlag(isNullable)) opts.push(true);
-      },
-    },
-    uuid: {
-      method: 'uuid',
-      pushArgs: ({ isNullable, isUnique }, opts) => {
-        if (requiredFlag(isNullable)) opts.push(true);
-        if (isUnique) opts.push(true);
-      },
-    },
-    date: {
-      method: 'date',
-      pushArgs: ({ isNullable, defaultValue }, opts) => {
-        if (requiredFlag(isNullable)) opts.push(true);
-        if (defaultValue != null) opts.push(JSON.stringify(defaultValue));
-      },
-    },
-    dateTime: {
-      method: 'datetime',
-      pushArgs: ({ isNullable, defaultValue }, opts) => {
-        if (requiredFlag(isNullable)) opts.push(true);
-        if (defaultValue != null) opts.push(JSON.stringify(defaultValue));
-      },
-    },
+    text: { method: 'text', args: (f) => [required(f)] },
+    uuid: { method: 'uuid', args: (f) => [required(f), String(f.isUnique)] },
+    date: { method: 'date', args: (f) => [required(f), stringDefault(f)] },
+    datetime: { method: 'datetime', args: (f) => [required(f), stringDefault(f)] },
     decimal: sharedDecimal(),
     float: sharedDecimal(),
     double: sharedDecimal(),
-    integer: sharedWithDefault('integer'),
-    bigInteger: sharedWithDefault('bigInteger'),
+    integer: { method: 'integer', args: (f) => [required(f), numericDefault(f)] },
+    biginteger: { method: 'bigInteger', args: (f) => [required(f), numericDefault(f, true)] },
     enum: {
       method: 'enumType',
-      pushArgs: ({ metadata, isNullable, defaultValue }, opts) => {
-        opts.unshift(JSON.stringify(metadata?.enumValues ?? []));
-        opts.push(!isNullable);
-        if (defaultValue != null) opts.push(JSON.stringify(defaultValue));
-      },
+      args: (f) => [JSON.stringify(f.metadata?.enumValues ?? []), required(f), stringDefault(f)],
     },
   };
 }
 
 /**
- * Shared config for decimal/float/double — all take `(required, precision, scale, BigNumber(default))`.
- * The required flag is always emitted so positional args stay aligned even when the column is nullable.
- * Default value is wrapped with `BigNumber(...)` to match `MigrationUtils.decimal`'s call site,
- * which expects a BigNumber instance, not a primitive number.
+ * Shared config for decimal/float/double — all take `(required, precision, scale, default)`.
+ * The default is a plain number: `MigrationUtils.decimal` wraps it with `BigNumber` itself.
  */
 function sharedDecimal(): TypeRenderer {
   return {
     method: 'decimal',
-    pushArgs: ({ isNullable, metadata, defaultValue }: ParsedField & { metadata: FieldMetadata | null }, opts) => {
-      opts.push(!isNullable);
-      if (metadata?.precision != null) opts.push(metadata.precision);
-      if (metadata?.scale != null) opts.push(metadata.scale);
-      if (defaultValue != null) opts.push(`BigNumber(${defaultValue})`);
-    },
-  };
-}
-
-/** Shared config for integer / bigInteger — both take `(required, default)`. */
-function sharedWithDefault(method: string): TypeRenderer {
-  return {
-    method,
-    pushArgs: ({ isNullable, defaultValue }, opts) => {
-      opts.push(!isNullable);
-      if (defaultValue != null) opts.push(defaultValue);
-    },
+    args: (f) => [required(f), optionalNumber(f.metadata?.precision), optionalNumber(f.metadata?.scale), numericDefault(f)],
   };
 }

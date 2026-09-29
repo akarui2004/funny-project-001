@@ -1,4 +1,4 @@
-import { AbstractDataTypeConstructor, DataType, DataTypes, ModelAttributeColumnOptions, ModelAttributeColumnReferencesOptions, TextLength } from 'sequelize'
+import { AbstractDataTypeConstructor, DataType, DataTypes, ModelAttributeColumnOptions, ModelAttributeColumnReferencesOptions } from 'sequelize'
 import BigNumber from 'bignumber.js';
 
 export const primaryKey = (dataType: DataType = DataTypes.UUID, options: Partial<ModelAttributeColumnOptions> = {}): ModelAttributeColumnOptions => ({
@@ -14,7 +14,7 @@ export const uuid = (required: boolean = false, unique: boolean = false): ModelA
   unique,
 })
 
-export const genericString = (required: boolean = false, length: number = 255, defaultValue?: AbstractDataTypeConstructor): ModelAttributeColumnOptions => {
+export const genericString = (required: boolean = false, length: number = 255, defaultValue?: string | AbstractDataTypeConstructor): ModelAttributeColumnOptions => {
   return {
     type: DataTypes.STRING(length),
     allowNull: !required,
@@ -55,13 +55,13 @@ export const decimal = (required: boolean = false, p = 36, s = 18, defaultValue 
   defaultValue: BigNumber(defaultValue),
 })
 
-export const datetime = (required: boolean = false, defaultValue?: AbstractDataTypeConstructor): ModelAttributeColumnOptions => ({
+export const datetime = (required: boolean = false, defaultValue?: string | AbstractDataTypeConstructor): ModelAttributeColumnOptions => ({
   type: DataTypes.DATE,
   allowNull: !required,
   defaultValue,
 });
 
-export const date = (required: boolean = false, defaultValue?: AbstractDataTypeConstructor): ModelAttributeColumnOptions => ({
+export const date = (required: boolean = false, defaultValue?: string | AbstractDataTypeConstructor): ModelAttributeColumnOptions => ({
   type: DataTypes.DATEONLY,
   allowNull: !required,
   defaultValue,
