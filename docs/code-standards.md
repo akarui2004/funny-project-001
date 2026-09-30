@@ -64,6 +64,8 @@ this document is silent.
   changes and provide both `up` and `down` operations where rollback is safe.
 - Reuse helpers from `src/db/migration-blueprint.ts` for common columns so
   nullability, timestamps, and key types remain consistent.
+- Use UUID for every primary and foreign key. Never use auto-increment,
+  serial, or bigint ids: they are guessable and allow enumeration.
 - Keep migration names timestamped and describe the schema change clearly.
 - Do not use `sync({ alter: true })` or `sync({ force: true })` as a substitute
   for migrations.
