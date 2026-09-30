@@ -41,4 +41,3 @@ Priority of phase 4 was not stated; placed after docs. Move it earlier if anh wa
 
 ## Unresolved questions
 - Existing `users` rows are sample data from CLI migration tests; anh deletes them before phase 2. The phase 2 migration still aborts if rows remain
-- Rename GitHub repo `funny-project-001` to match `fund`?
