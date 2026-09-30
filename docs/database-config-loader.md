@@ -8,7 +8,7 @@ app always connect with the **same** settings:
 
 ```mermaid
 flowchart LR
-    TOML["config/*.toml"] --> AppConfig["src/app/config<br/>(defu deep merge + Zod)"]
+    TOML["config/*.toml"] --> AppConfig["src/app/config-loader<br/>(defu deep merge + Zod)"]
     AppConfig --> Builder["buildSequelizeOptions()<br/>src/app/connections/database.ts"]
     Builder --> Runtime["appDb.initialize()<br/>(running app)"]
     Builder --> CLI["src/db/sequelize-cli-config.cjs<br/>(Sequelize CLI)"]
@@ -83,7 +83,7 @@ only overrides the keys it sets.
 
 ## Error Behavior
 
-Validation is the Zod schema in `src/app/config/schema/`. It runs before the CLI connects. The CLI
+Validation is the Zod schema in `src/app/config-loader/schema/`. It runs before the CLI connects. The CLI
 therefore also requires valid `redis` and `env` sections, because it loads the full app config.
 An empty `username` or `password` fails fast:
 
