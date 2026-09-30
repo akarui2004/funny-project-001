@@ -23,8 +23,8 @@ for implementation details.
 ## Entry Points And Owners
 
 - Application startup: `src/server.ts`
-- Runtime configuration: `src/app/config/index.ts`
-- Configuration schemas: `src/app/config/schema/`
+- Runtime configuration: `src/app/config-loader/index.ts`
+- Configuration schemas: `src/app/config-loader/schema/`
 - Runtime database connections: `src/app/connections/database.ts`
   (`appDb.getDb()` throws if not initialized, like `appRedis.getClient()`)
 - Runtime Redis connections: `src/app/connections/redis.ts`
@@ -32,6 +32,9 @@ for implementation details.
   (reuses the runtime config loader and `buildSequelizeOptions`)
 - Database migrations: `src/db/migrations/`
 - Shared migration column helpers: `src/db/migration-blueprint.ts`
+- Directory layout and module dependency diagram: `docs/project-structure.md`
+- Project root resolver (`.app_root` marker): `src/utils/resolve-project-root.ts`;
+  import it directly, not via the `src/utils` barrel (circular with the logger)
 - Logging: `src/utils/logger.ts` and `src/constants/logging.ts`; use
   `createModuleLogger('<module>')` so lines are tagged, not `console.log`.
   Configured by `LOG_*` env vars, not TOML (the logger exists before config loads)
@@ -67,5 +70,4 @@ automated test suite currently; do not claim tests passed based on the build.
 - `src/server.ts` currently exposes no HTTP routes.
 - Startup requires reachable PostgreSQL and both Redis instances.
 - `scripts/db/genMigration.ts` is currently a placeholder.
-- `yarn migration:create` and `yarn seeder:create` point to scripts that do
-  not exist yet.
+- `src/db/models/`, `src/db/seeders/` and `tests/` are empty placeholders.

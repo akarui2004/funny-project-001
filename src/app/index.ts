@@ -1,2 +1,2 @@
-export { default as appConfig } from './config';
+export { default as appConfig } from './config-loader';
 export * from './connections';

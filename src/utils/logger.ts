@@ -1,8 +1,8 @@
-import { Defaults, Loggings } from 'src/constants';
+import { DEFAULTS, LOGGING } from 'src/constants';
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 
-const { prefixFileName, datePattern, maxSize, maxFiles } = Loggings.rotation;
+const { prefixFileName, datePattern, maxSize, maxFiles } = LOGGING.rotation;
 const winstonDateTimeFormat = 'YYYY-MM-DD HH:mm:ss Z';
 
 // Uppercase before colorize, otherwise the ANSI escape codes get uppercased too
@@ -34,7 +34,7 @@ const consoleFormat = winston.format.combine(
 // Rotation & Cleanup: Configure DailyRotateFile
 const rotateTransport = new DailyRotateFile({
   filename: `${prefixFileName}-%DATE%.log`,
-  dirname: Defaults.LOGS_DIR,
+  dirname: DEFAULTS.LOGS_DIR,
   datePattern: datePattern,
   maxSize: maxSize,
   maxFiles: maxFiles,
@@ -43,7 +43,7 @@ const rotateTransport = new DailyRotateFile({
 
 // Create winston logger
 export const logger = winston.createLogger({
-  level: Loggings.level,
+  level: LOGGING.level,
   transports: [
     rotateTransport,
     new winston.transports.Console({ format: consoleFormat }),

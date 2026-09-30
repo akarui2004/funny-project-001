@@ -2,7 +2,7 @@ import { defu } from 'defu';
 import fs from 'fs';
 import { EOL } from 'os';
 import path from 'path';
-import { Defaults, NODE_ENV } from 'src/constants';
+import { DEFAULTS, NODE_ENV } from 'src/constants';
 import { createModuleLogger } from 'src/utils/logger';
 import Toml from 'toml';
 import { CONFIG_SCHEMA, TConfigSchema } from './config.type';
@@ -18,7 +18,7 @@ class ConfigManager {
 
   protected get raw(): TConfigSchema {
     if (!this._cachedConfig) {
-      log.info(`🚀 Reading TOML files from ${Defaults.CONFIG_DIR}`);
+      log.info(`🚀 Reading TOML files from ${DEFAULTS.CONFIG_DIR}`);
       this._cachedConfig = this.resolvedConfig();
     }
 
@@ -28,14 +28,14 @@ class ConfigManager {
   private resolvedConfig(): TConfigSchema {
     let _tomlObj = {};
     for (const configFile of this.primaryConfigFiles) {
-      const configPath = path.resolve(Defaults.CONFIG_DIR, configFile);
+      const configPath = path.resolve(DEFAULTS.CONFIG_DIR, configFile);
       const isOptional = configFile.endsWith(`.local.toml`);
       if (!fs.existsSync(configPath)) {
         if (isOptional) {
           log.info(`🗄️  Skipped ${configFile} (optional, not found)`);
           continue; // skip local override file safety if missing
         }
-        throw new Error(`Required config file "${configFile}" does not exist in config path: ${Defaults.CONFIG_DIR}`);
+        throw new Error(`Required config file "${configFile}" does not exist in config path: ${DEFAULTS.CONFIG_DIR}`);
       }
 
       const tomlData = this.loadEnvFile(configPath);

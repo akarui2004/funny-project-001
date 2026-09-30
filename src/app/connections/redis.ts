@@ -1,9 +1,9 @@
 import RedisClient, { Redis as IORedisInstance } from 'ioredis';
-import appConfig from 'src/app/config';
+import appConfig from 'src/app/config-loader';
 import { createModuleLogger } from 'src/utils/logger';
-import { TRedisSchema } from '../config/config.type';
+import { TRedisSchema } from '../config-loader/config.type';
 
-class Redis {
+class RedisManager {
   private redisConfig: TRedisSchema;
 
   // Define the client that redis connect by type
@@ -99,4 +99,4 @@ class Redis {
   }
 }
 
-export const appRedis = new Redis();
+export const appRedis = new RedisManager();

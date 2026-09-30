@@ -34,7 +34,7 @@ this document is silent.
 ## Configuration
 
 - Add configuration fields to the TOML schema in
-  `src/app/config/schema/` before consuming them in application code.
+  `src/app/config-loader/schema/` before consuming them in application code.
 - Keep parsing and validation at the configuration boundary. Application
   modules should consume typed config rather than reading `process.env`
   directly.

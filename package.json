@@ -1,5 +1,5 @@
 {
-  "name": "backend-funny-project-001",
+  "name": "backend-fund-project-001",
   "version": "1.0.0",
   "description": "This is just a project for fun",
   "main": "src/server.ts",
@@ -13,8 +13,7 @@
     "db:migrate": "sequelize-cli db:migrate",
     "db:migrate:undo": "sequelize-cli db:migrate:undo",
     "db:seed:all": "sequelize-cli db:seed:all",
-    "migration:create": "yarn script ./scripts/db/migration-cli create",
-    "seeder:create": "yarn script ./scripts/db/createSeeder",
+    "db:migration:create": "yarn script ./scripts/db/migration-cli create",
     "clean": "rimraf ./dist"
   },
   "nodemonConfig": {
