@@ -73,4 +73,4 @@ docs/                    project docs, start with the reading order in README.md
 
 - `yarn build`: compile TypeScript
 - `yarn console`: Node REPL with `.env` loaded
-- `yarn migration:create`, `yarn seeder:create`: planned, not implemented yet
+- `yarn db:migration:create`: available via `scripts/db/migration-cli.ts`; seeder creation is not implemented yet

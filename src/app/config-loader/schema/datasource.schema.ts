@@ -1,18 +1,18 @@
 import { z } from 'zod';
 
-const DATASOURCE_MASTER_OPTIONS = z.object({
+const DATASOURCE_MASTER_OPTIONS_SCHEMA = z.object({
   ssl: z.boolean(),
   connectionTimeout: z.coerce.number().default(60000)
 });
 
-const DATASOURCE_MASTER_POOL = z.object({
+const DATASOURCE_MASTER_POOL_SCHEMA = z.object({
   max: z.coerce.number().default(10),
   min: z.coerce.number().default(5),
   acquireTimeout: z.coerce.number().default(30000),
   idle: z.coerce.number().default(10000)
 });
 
-export const DATASOURCE_MASTER = z.object({
+export const DATASOURCE_MASTER_SCHEMA = z.object({
   dialect: z.string().default('postgres'),
   host: z.string().default('localhost'),
   port: z.coerce.number().default(5432),
@@ -20,10 +20,10 @@ export const DATASOURCE_MASTER = z.object({
   database: z.string().default('fund_project'),
   username: z.string().min(1, 'username is required (set it in <env>.toml or <env>.local.toml)'),
   password: z.string().min(1, 'password is required (set it in <env>.toml or <env>.local.toml)'),
-  pool: DATASOURCE_MASTER_POOL,
-  option: DATASOURCE_MASTER_OPTIONS
+  pool: DATASOURCE_MASTER_POOL_SCHEMA,
+  option: DATASOURCE_MASTER_OPTIONS_SCHEMA
 });
 
 export const DATASOURCE_SCHEMA = z.object({
-  master: DATASOURCE_MASTER,
+  master: DATASOURCE_MASTER_SCHEMA,
 });

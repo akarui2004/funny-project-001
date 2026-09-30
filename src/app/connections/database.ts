@@ -1,7 +1,7 @@
 import { Dialect, Sequelize, Options as SequelizeOptions } from 'sequelize';
-import appConfig from 'src/app/config';
+import appConfig from 'src/app/config-loader';
 import { createModuleLogger } from 'src/utils/logger';
-import { TDatasourceSchema, TMasterDatasourceSchema } from '../config/config.type';
+import { TDatasourceSchema, TMasterDatasourceSchema } from '../config-loader/config.type';
 
 const log = createModuleLogger('db');
 
@@ -31,7 +31,7 @@ export const buildSequelizeOptions = (datasource: TMasterDatasourceSchema): Sequ
   };
 };
 
-class Database {
+class DatabaseManager {
   private dbConfig: TDatasourceSchema;
   private dbClients: Partial<Record<keyof TDatasourceSchema, Sequelize>> = {};
 
@@ -99,4 +99,4 @@ class Database {
   }
 }
 
-export const appDb = new Database();
+export const appDb = new DatabaseManager();

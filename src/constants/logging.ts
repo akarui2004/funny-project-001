@@ -1,4 +1,4 @@
-export const Loggings = {
+export const LOGGING = {
   level: process.env.LOG_LEVEL || 'info',
   rotation: {
     prefixFileName: process.env.LOG_ROTATION_PREFIX || 'app',
