@@ -4,15 +4,16 @@ port = 3000
 [http]
   trustProxy = false
   [http.cors]
-    origins = []          # empty = deny cross-origin
+    origins = []      # empty = deny cross-origin
   [http.rateLimit]
     windowMs = 60000
     limit = 100
   [http.manager]
-    allowedCidrs = []     #  empty = allow all (dev)
+    allowCidrs = []   # empty = allow all (dev); set in production
 
 [auth]
-  issuer = "fund-project"
+  issuer = 'fund-project'
+  jwtSecret = ''
   [auth.accessTtlSeconds]
     api = 900
     ops = 900
