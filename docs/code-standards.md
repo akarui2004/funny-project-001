@@ -31,6 +31,32 @@ this document is silent.
 - Name configuration keys after the library or protocol expects them. Convert
   application names to library-specific names at the integration boundary.
 
+Conventions already used in the codebase; follow them for new code:
+
+| Thing | Convention | Example |
+|-------|-----------|---------|
+| Folder | kebab-case | `config-loader/` |
+| Module file | kebab-case `.ts` | `resolve-project-root.ts` |
+| Zod schema file | `<name>.schema.ts` | `redis.schema.ts` |
+| Type-only file | `<name>.type.ts` | `config.type.ts` |
+| Folder public API | `index.ts` barrel re-exports | `src/constants/index.ts` |
+| Migration file | `YYYYMMDDHHmmss-<verb>-<noun>.ts`, created via `yarn db:migration:create` | `20260724075029-create-user.ts` |
+| Zod schema constant | `UPPER_SNAKE_CASE` + `_SCHEMA` | `REDIS_SCHEMA` |
+| Type inferred from a schema | `T` prefix + PascalCase | `TRedisSchema` |
+| Interface / class | PascalCase, no `I` prefix | `ParsedField`, `MigrationColumnParser` |
+| Constant group object | `UPPER_SNAKE_CASE` | `DEFAULTS`, `LOGGING` |
+| Managed singleton | `app` + PascalCase noun | `appDb`, `appRedis`, `appConfig` |
+| Function | camelCase verb phrase, `export const` arrow | `buildSequelizeOptions`, `createModuleLogger` |
+| Module logger tag | short lowercase name | `createModuleLogger('db')` |
+
+## Formatting
+
+- 2-space indentation, semicolons, single quotes (template literals for
+  interpolation). No formatter is configured; VS Code's built-in TypeScript
+  formatter runs on save (`.vscode/settings.json`).
+- Comments explain *why* (intent, invariants, cross-file coupling), not what
+  the next line does.
+
 ## Configuration
 
 - Add configuration fields to the TOML schema in

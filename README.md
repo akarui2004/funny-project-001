@@ -72,32 +72,32 @@ Before touching any code, **read the docs in this order**. Each doc builds on th
 
 | # | Doc | Why read it first |
 |---|-----|-------------------|
-| 1 | [docs/configuration.md](docs/configuration.md) | Master reference for the layered TOML config system (`base.toml` → `<env>.toml` → `<env>.local.toml`). Covers the full schema: `env`, `datasource`, `redis`. **Read this first** — every other doc assumes you understand the layered override order. |
-| 2 | [docs/environment-configuration.md](docs/environment-configuration.md) | Explains how `NODE_ENV` and `.env` files are loaded via `dotenv`. Tells you which env vars exist and how to set them locally. |
-| 3 | [docs/database-config-loader.md](docs/database-config-loader.md) | Deep-dive on `src/db/sequelize-cli-config.cjs`, the file Sequelize CLI loads through `.sequelizerc`. Explains how it reuses the runtime config loader, why it is `.cjs`, and its failure modes. |
-| 4 | [docs/sequelize-and-sequelize-cli-relationship.md](docs/sequelize-and-sequelize-cli-relationship.md) | The big-picture diagram showing how `sequelize-cli` (dev-time) and the `sequelize` library (run-time) share the same `config/`, `models/`, and `migrations/` folders. Read this to understand *where* a change belongs. |
+| 1 | [docs/setup/configuration.md](docs/setup/configuration.md) | Master reference for the layered TOML config system (`base.toml` → `<env>.toml` → `<env>.local.toml`). Covers the full schema: `env`, `datasource`, `redis`. **Read this first** — every other doc assumes you understand the layered override order. |
+| 2 | [docs/setup/environment-configuration.md](docs/setup/environment-configuration.md) | Explains how `NODE_ENV` and `.env` files are loaded via `dotenv`. Tells you which env vars exist and how to set them locally. |
+| 3 | [docs/database/database-config-loader.md](docs/database/database-config-loader.md) | Deep-dive on `src/db/sequelize-cli-config.cjs`, the file Sequelize CLI loads through `.sequelizerc`. Explains how it reuses the runtime config loader, why it is `.cjs`, and its failure modes. |
+| 4 | [docs/database/sequelize-and-sequelize-cli-relationship.md](docs/database/sequelize-and-sequelize-cli-relationship.md) | The big-picture diagram showing how `sequelize-cli` (dev-time) and the `sequelize` library (run-time) share the same `config/`, `models/`, and `migrations/` folders. Read this to understand *where* a change belongs. |
 
 ### Quick mental model
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  docs/configuration.md                                  │
+│  docs/setup/configuration.md                                  │
 │  → the layered TOML config system (base/env/local)      │
 └──────────────────────┬──────────────────────────────────┘
                        ▼
 ┌─────────────────────────────────────────────────────────┐
-│  docs/environment-configuration.md                      │
+│  docs/setup/environment-configuration.md                      │
 │  → how NODE_ENV + .env are loaded                       │
 └──────────────────────┬──────────────────────────────────┘
                        ▼
 ┌─────────────────────────────────────────────────────────┐
-│  docs/database-config-loader.md                         │
+│  docs/database/database-config-loader.md                         │
 │  → how src/db/sequelize-cli-config.cjs reuses the app   │
 │    config to build the Sequelize CLI config object      │
 └──────────────────────┬──────────────────────────────────┘
                        ▼
 ┌─────────────────────────────────────────────────────────┐
-│  docs/sequelize-and-sequelize-cli-relationship.md       │
+│  docs/database/sequelize-and-sequelize-cli-relationship.md       │
 │  → how CLI (dev) and sequelize lib (runtime) share      │
 │    config/, models/, migrations/, seeders/              │
 └─────────────────────────────────────────────────────────┘

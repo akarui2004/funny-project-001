@@ -32,7 +32,8 @@ for implementation details.
   (reuses the runtime config loader and `buildSequelizeOptions`)
 - Database migrations: `src/db/migrations/`
 - Shared migration column helpers: `src/db/migration-blueprint.ts`
-- Directory layout and module dependency diagram: `docs/project-structure.md`
+- Directory layout and module dependency diagram: [`docs/architecture/project-structure.md`](architecture/project-structure.md)
+- System, file, request, auth and data-model diagrams: [`docs/architecture/system-diagrams.md`](architecture/system-diagrams.md)
 - Project root resolver (`.app_root` marker): `src/utils/resolve-project-root.ts`;
   import it directly, not via the `src/utils` barrel (circular with the logger)
 - Logging: `src/utils/logger.ts` and `src/constants/logging.ts`; use
@@ -49,8 +50,8 @@ config/base.toml -> config/<NODE_ENV>.toml -> config/<NODE_ENV>.local.toml
 
 The runtime loader validates `env`, `datasource.master`, `redis.master`, and
 `redis.queue` with Zod. The Sequelize CLI config reuses that loader and
-exports only `datasource.master`. See `docs/configuration.md` and
-`docs/database-config-loader.md` for the full contract.
+exports only `datasource.master`. See `docs/setup/configuration.md` and
+`docs/database/database-config-loader.md` for the full contract.
 
 ## Verification
 
@@ -69,5 +70,5 @@ automated test suite currently; do not claim tests passed based on the build.
 
 - `src/server.ts` currently exposes no HTTP routes.
 - Startup requires reachable PostgreSQL and both Redis instances.
-- `scripts/db/genMigration.ts` is currently a placeholder.
+- Migrations are scaffolded by `scripts/db/migration-cli.ts` (`yarn db:migration:create`).
 - `src/db/models/`, `src/db/seeders/` and `tests/` are empty placeholders.
