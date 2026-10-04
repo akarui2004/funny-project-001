@@ -1,0 +1,11 @@
+# Project Instructions
+
+Read [`docs/agent-context.md`](docs/agent-context.md) before working on this
+repository. It is the canonical project context and verification guide.
+
+For configuration and database work, also read the linked documentation in
+`README.md` before making changes.
+
+All code changes must follow [`docs/code-standards.md`](docs/code-standards.md)
+(naming conventions, formatting, TypeScript rules). Match surrounding code
+where the standards are silent.
