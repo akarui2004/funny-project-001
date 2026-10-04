@@ -29,7 +29,7 @@ Put local database credentials in an ignored override file, not in committed TOM
 ```
 
 Startup fails fast if `username` or `password` is empty. Config merge order and the full schema are in
-[docs/configuration.md](docs/configuration.md).
+[configuration.md](configuration.md).
 
 ## Database
 
@@ -39,7 +39,7 @@ yarn db:migrate:undo     # revert the last migration
 ```
 
 `yarn db:migrate` does not load `.env`. For a non-development environment, set `NODE_ENV` in the shell:
-`NODE_ENV=staging yarn db:migrate`. See [docs/database-config-loader.md](docs/database-config-loader.md).
+`NODE_ENV=staging yarn db:migrate`. See [database-config-loader.md](../database/database-config-loader.md).
 
 ## Running
 

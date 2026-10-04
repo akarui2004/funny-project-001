@@ -20,7 +20,7 @@ One loader, one mapping: pool, SSL, and timeouts set in TOML apply to migrations
 
 ## How Sequelize CLI Finds It
 
-[`.sequelizerc`](../.sequelizerc):
+[`.sequelizerc`](../../.sequelizerc):
 
 ```js
 require('ts-node/register');
@@ -70,7 +70,7 @@ Keyed by environment, so `NODE_ENV=production yarn db:migrate` makes the CLI pic
 
 ## Layered Override Order
 
-Same as the app, see [configuration.md](./configuration.md):
+Same as the app, see [configuration.md](../setup/configuration.md):
 
 ```
 base.toml → <env>.toml → <env>.local.toml (optional, gitignored)
@@ -105,6 +105,6 @@ Config validation warning:
 
 ## Related Docs
 
-- [configuration.md](./configuration.md): full TOML schema and override rules.
-- [environment-configuration.md](./environment-configuration.md): how `NODE_ENV` is set.
+- [configuration.md](../setup/configuration.md): full TOML schema and override rules.
+- [environment-configuration.md](../setup/environment-configuration.md): how `NODE_ENV` is set.
 - [sequelize-and-sequelize-cli-relationship.md](./sequelize-and-sequelize-cli-relationship.md): how the CLI and the runtime library relate.

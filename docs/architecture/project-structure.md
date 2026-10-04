@@ -5,7 +5,7 @@
 ```text
 .
 ├── config/            # TOML runtime config (base -> <env> -> <env>.local)
-├── docs/              # Evergreen docs
+├── docs/              # Evergreen docs (setup/, database/, architecture/)
 ├── logs/              # Winston output (git-ignored, .gitkeep only)
 ├── scripts/           # Dev CLI tools (not shipped in dist)
 │   ├── base-cli.ts
