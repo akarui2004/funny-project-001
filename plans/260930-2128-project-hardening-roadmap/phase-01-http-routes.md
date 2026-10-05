@@ -92,7 +92,7 @@ Feature logic lives in `src/modules/<feature>/` (phase 2). Each surface router o
     ops = 604800
     manager = 86400
 ```
-`.env`/`.env.example`: `JWT_SECRET` (name only in the example, no value). `HTTP_SCHEMA`, `AUTH_SCHEMA` -> `CONFIG_SCHEMA`; getters `http`, `auth` on `AppConfig`; loader merges `process.env.JWT_SECRET` into `auth.jwtSecret`; defaults in `config/base.toml`; document in `docs/configuration.md` and `docs/environment-configuration.md`.
+`.env`/`.env.example`: `JWT_SECRET` (name only in the example, no value). `HTTP_SCHEMA`, `AUTH_SCHEMA` -> `CONFIG_SCHEMA`; getters `http`, `auth` on `AppConfig`; loader merges `process.env.JWT_SECRET` into `auth.jwtSecret`; defaults in `config/base.toml`; document in `docs/setup/configuration.md` and `docs/setup/environment-configuration.md`.
 
 ## Steps
 1. `yarn add jose`
