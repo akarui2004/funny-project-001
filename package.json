@@ -14,6 +14,7 @@
     "db:migrate:undo": "sequelize-cli db:migrate:undo",
     "db:seed:all": "sequelize-cli db:seed:all",
     "db:migration:create": "yarn script ./scripts/db/migration-cli create",
+    "config:validate": "yarn script ./scripts/config/config-cli validate",
     "clean": "rimraf ./dist"
   },
   "nodemonConfig": {
