@@ -1,43 +1,71 @@
-export class HttpError extends Error {
+export interface HttpErrorPayload {
+  status: number;
+  code: string;
+  message: string;
+}
+
+export interface HttpErrorOptions<T = unknown> {
+  code?: string;
+  details?: T;
+  cause?: unknown;
+}
+
+export const HTTP_ERRORS = {
+  // --- Client Errors (4xx) ---
+  badRequest: { status: 400, code: 'BAD_REQUEST', message: 'Bad Request' },
+  unauthorized: { status: 401, code: 'UNAUTHORIZED', message: 'Authentication required' },
+  forbidden: { status: 403, code: 'FORBIDDEN', message: 'Access denied' },
+  notFound: { status: 404, code: 'NOT_FOUND', message: 'Resource not found' },
+  conflict: { status: 409, code: 'CONFLICT', message: 'Conflict occurred' },
+  unprocessableEntity: { status: 422, code: 'UNPROCESSABLE_ENTITY', message: 'Unprocessable entity' },
+  tooManyRequest: { status: 429, code: 'TOO_MANY_REQUESTS', message: 'Too many requests' },
+  // --- Server Errors (5xx) ---
+  internal: { status: 500, code: 'INTERNAL_ERROR', message: 'Internal Server Error' },
+  serviceUnavailable: { status: 503, code: 'SERVICE_UNAVAILABLE', message: 'Service unavailable' },
+} as const satisfies Record<string, HttpErrorPayload>;
+
+type HttpDefinitions = typeof HTTP_ERRORS;
+
+export class BaseHttpError<T = unknown> extends Error {
   public readonly status: number;
   public readonly code: string;
-  public readonly details?: unknown;
+  public readonly details?: T;
 
-  constructor(status: number, code: string, message: string, details?: unknown) {
-    super(message);
+  public static readonly UNKNOWN_ERROR_CODE = 'UNKNOWN_ERROR';
+
+  constructor(status: number, message: string, options: HttpErrorOptions<T> = {}) {
+    super(message, { cause: options.cause });
     this.name = 'HttpError';
     this.status = status;
-    this.code = code;
-    this.details = details;
+    this.code = options.code ?? BaseHttpError.UNKNOWN_ERROR_CODE;
+    this.details = options.details;
 
     Object.setPrototypeOf(this, new.target.prototype);
   }
 
-  static badRequest(message: string, code = 'BAD_REQUEST', details?: unknown): HttpError {
-    return new HttpError(400, code, message, details);
-  }
-
-  static unAuthenticated(message = 'Authentication required', code = 'UNAUTHENTICATED'): HttpError {
-    return new HttpError(401, code, message)
-  }
-
-  static unProcessEntity(message = 'Unprocessable entity', code = 'UNPROCESSABLE_CONTENT', details?: unknown): HttpError {
-    return new HttpError(422, code, message, details);
-  }
-
-  static forbidden(message = 'Access denied', code = 'FORBIDDEN'): HttpError {
-    return new HttpError(403, code, message);
-  }
-
-  static notFound(message = 'Resource not found', code = 'NOT_FOUND'): HttpError {
-    return new HttpError(404, code, message);
-  }
-
-  static internal(message = 'Internal Server Error', code = 'INTERNAL_ERROR'): HttpError {
-    return new HttpError(500, code, message);
-  }
-
-  static serviceUnavailable(message = 'Service unavailable', code = 'SERVICE_UNAVAILABLE', details?: unknown): HttpError {
-    return new HttpError(503, code, message, details);
+  // --- Helpers ---
+  public toJSON() {
+    return {
+      status: this.status,
+      // code: this.code,
+      message: this.message,
+      ...(this.details !== undefined && { details: this.details }),
+    };
   }
 }
+
+type StaticErrorMethods = {
+  [K in keyof HttpDefinitions]: <T = unknown>(message?: string, options?: HttpErrorOptions<T>) => BaseHttpError<T>;
+}
+
+for (const [key, def] of Object.entries(HTTP_ERRORS)) {
+  (BaseHttpError as unknown as Record<string, unknown>)[key] = function <T>(message?: string, options?: HttpErrorOptions<T>) {
+    return new BaseHttpError<T>(def.status, message ?? def.message, options)
+  }
+}
+
+export const HttpErrors = BaseHttpError as typeof BaseHttpError & StaticErrorMethods;
+export const HttpError = HttpErrors;
+
+export type HttpError<T = unknown> = BaseHttpError<T>;
+export type HttpErrors<T = unknown> = BaseHttpError<T>;
