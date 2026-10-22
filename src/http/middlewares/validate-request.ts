@@ -1,56 +1,86 @@
 import { NextFunction, Request, Response } from 'express';
-import { z, ZodError } from 'zod';
-import { HttpError } from '../errors/http-error';
+import { z } from 'zod';
+import { HTTP_ERRORS, HttpError } from '../errors/http-error';
 
 export interface RequestValidationSchemas {
-  body?: z.ZodObject,
-  params?: z.ZodObject,
-  query?: z.ZodObject,
+  params?: z.ZodType;
+  body?: z.ZodType;
+  query?: z.ZodType;
+}
+
+type ValidationSource = keyof RequestValidationSchemas;
+
+interface ValidationFailure {
+  source: ValidationSource;
+  error: z.ZodError;
 }
 
 export function validateRequest(schemas: RequestValidationSchemas) {
   return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
-    try {
-      if (schemas.params) {
-        const validatedParams = await schemas.params.parseAsync(req.params);
-        Object.assign(req.params, validatedParams);
-      }
-      if (schemas.query) {
-        const validatedQueries = await schemas.query.parseAsync(req.query);
-        Object.assign(req.query, validatedQueries);
-      }
-      if (schemas.body) {
-        const validatedBodies = await schemas.body.parseAsync(req.body);
-        Object.assign(req.body, validatedBodies);
-      }
-      next();
-    } catch (error: unknown) {
-      if (error instanceof ZodError) {
-        const isUuidError = Boolean(schemas.params) && error.issues.some(
-          (issue) => issue.code === 'invalid_format' && issue.format === 'uuid'
-        );
+    const sources = ['params', 'body', 'query'] as const satisfies readonly ValidationSource[];
+    const failures: ValidationFailure[] = [];
 
-        if (isUuidError) {
-          next(
-            new HttpError(
-              400,
-              'Invalid UUID format in pathz parameter',
-              { details: z.treeifyError(error) }
-            )
-          );
-          return;
-        }
+    for (const source of sources) {
+      const schema = schemas[source];
+      if (!schema) continue;
 
-        next(
-          new HttpError(
-            400,
-            'Validation failed for request payload',
-            { details: z.treeifyError(error) }
-          )
-        );
-        return;
+      const result = await schema.safeParseAsync(req[source]);
+
+      if (result.success) {
+        replaceRequestData(req, source, result.data);
+      } else {
+        failures.push({ source, error: result.error });
       }
-      next(error);
     }
+
+    if (failures.length === 0) {
+      next();
+      return;
+    }
+
+    next(toHttpError(failures));
   }
+}
+
+function replaceRequestData(req: Request, source: ValidationSource, data: unknown): void {
+  const target = req[source] as Record<string, unknown>;
+  for (const key of Object.keys(target)) delete target[key];
+
+  if (data && typeof data === 'object') {
+    Object.assign(target, data);
+  }
+}
+
+function toHttpError(failures: ValidationFailure[]): HttpError {
+  const issues = failures.flatMap(({ source, error }) =>
+    error.issues.map((issue) => ({
+      ...issue,
+      path: [source, ...issue.path],
+    }))
+  );
+
+  const hasUuidFormatError = issues.some(
+    (issue) => issue.code === 'invalid_format' && issue.format === 'uuid'
+  );
+
+  const details = issues.reduce<Record<string, Record<string, string[]>>>(
+    (acc, issue) => {
+      const [rawSource, ...fieldPath] = issue.path;
+      const source = String(rawSource);
+      const field = fieldPath.join('.') || '(root)';
+
+      acc[source] ??= {};
+      (acc[source][field] ??= []).push(issue.message);
+
+      return acc;
+    },
+    {}
+  );
+
+  const sources = failures.map((f) => f.source);
+  const message = hasUuidFormatError
+    ? 'Invalid UUID format in path parameter'
+    : `Validation failed for ${sources.join(', ')}`;
+
+  return new HttpError(HTTP_ERRORS.badRequest.status, message, { details });
 }
