@@ -12,3 +12,5 @@
  * |  Wildcard          | 192.168.*.*           | Convert to regex            |
  * |  IPv4-mapped IPv6  | ::ffff:192.168.1.1    | Normalize to IPv4           |
  */
+
+export function ipBlacklist(blockedCidrs: string[]) { }

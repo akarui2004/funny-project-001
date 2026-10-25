@@ -8,3 +8,5 @@
  *  ‣ PCI-DSS: Payment Card Industry Security Standards Council
  *  ‣ HIPAA: Health Insurance Portability and Accountability Act
  */
+
+export function ipAllowlist(allowedCidrs: string[]) { }
