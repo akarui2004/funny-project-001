@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { createModuleLogger, getErrorMessage } from 'src/utils';
-import { ZodError } from 'zod';
+import { z, ZodError } from 'zod';
 import { HttpError } from '../errors/http-error';
 
 const logger = createModuleLogger('http');
@@ -39,14 +39,14 @@ export function errorHandler(err: unknown, req: Request, res: Response, _next: N
       error: {
         code: 'INVALID_INPUT',
         message: 'Validation failed',
-        details: err.flatten(),
+        details: z.flattenError(err),
       },
     });
     return;
   }
 
   // 3. Malformed JSON error
-  if (err instanceof SyntaxError && 'status' in err && (err as { status?: unknown }).status === 400 && 'body' in err) {
+  if (err instanceof SyntaxError && 'status' in err && (err as { status?: unknown; }).status === 400 && 'body' in err) {
     res.status(400).json({
       error: {
         code: 'INVALID_JSON',
