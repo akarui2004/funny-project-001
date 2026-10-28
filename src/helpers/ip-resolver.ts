@@ -13,25 +13,41 @@
  *  the start IP, and the '|' operator to find the end IP
  */
 
-abstract class IPResolver {
-  static readonly VERSION = {
-    v4: 4,
-    v6: 6,
-    Invalid: 0,
-  } as const;
+import net from 'net';
 
-  static readonly PREFIX_RANGE_NUM = {
-    v4: [0, 32],
-    v6: [0, 128],
-  } as const;
+export type IpVersions = 'V4' | 'V6' | 'INVALID';
+
+abstract class IPResolver {
+  static readonly IP_VERSION: Record<IpVersions, number> = {
+    V4: 4,
+    V6: 6,
+    INVALID: 0,
+  };
+
+  static readonly MAX_CIDR_V4 = 32;
+  static readonly MAX_CIDR_V6 = 128;
 
   // Prevent the instantiation
   private constructor() { }
 
   static identifyVersion(input: string): number {
-    // Return 'v4' or 'v6'; return 0 if IP invalid
-    const { } = input.split('/');
-    return this.VERSION.Invalid;
+    const segments = input.split('/');
+    if (segments.length > 2) return this.IP_VERSION.INVALID;
+
+    const [ip = '', cidr] = segments;
+    const ipVersion = net.isIP(ip);
+
+    if (ipVersion !== this.IP_VERSION.INVALID) {
+      if (cidr === undefined) return ipVersion;
+
+      if (/^(0|[1-9]\d{0,2})$/.test(cidr)) {
+        const cidrNum = Number(cidr);
+        const max = ipVersion === this.IP_VERSION.V4 ? this.MAX_CIDR_V4 : this.MAX_CIDR_V6;
+        if (cidrNum >= 0 && cidrNum <= max) return ipVersion;
+      }
+    }
+
+    return this.IP_VERSION.INVALID;
   }
 }
 
