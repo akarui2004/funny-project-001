@@ -49,6 +49,10 @@ abstract class IPResolver {
 
     return this.IP_VERSION.INVALID;
   }
+
+  static matchIPRule(input: string, rule: string): boolean {
+    return true;
+  }
 }
 
 export default IPResolver;
