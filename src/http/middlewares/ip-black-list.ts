@@ -1,9 +1,9 @@
 /**
  * Public-facing app
- * Block IP spam, brute-force, abuse đã biết
- * Kết hợp với rate-limit để auto-ban
+ * Block known spam, brute-force and abusive IPs
+ * Combine with rate-limit to auto-ban
  *
- * Các case blacklist cần support
+ * Blacklist cases to support
  * |        TYPE        |       EXAMPLE         |         MATCH METHOD        |
  * |  Single IPv4       | 192.168.1.100         | String compare/normalize    |
  * |  IPv4 CIDR         | 192.168.1.0/24        | Bitmask compare             |

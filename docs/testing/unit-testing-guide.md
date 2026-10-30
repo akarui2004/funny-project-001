@@ -1,92 +1,74 @@
 # Unit Testing Guide
 
-Hướng dẫn thêm unit test cho project này. Mục tiêu: **không thêm dependency
-mới**, dùng những gì đã có sẵn.
+How unit tests work in this project. Rules on **what** must be tested live in
+the Testing section of [`docs/code-standards.md`](../code-standards.md); this
+guide covers the **how**.
 
-## 1. Hiện trạng
+No test dependencies were added: tests use Node's built-in `node:test` and
+`node:assert/strict`, run through `tsx` (already a dependency), which also
+resolves the `src/*` alias from `tsconfig.json`.
 
-- Chưa có test runner, chưa có script `test` trong `package.json`.
-- `tests/` chỉ có `.gitkeep`.
-- `tsconfig.json` đã `exclude` `**/*.test.ts` và chỉ `include` `src/**` →
-  file test **không bị build vào `dist/`**. Không cần sửa gì.
-- Node `22.23.4` có sẵn test runner (`node:test`) + assert (`node:assert/strict`).
-- `tsx` đã có trong `dependencies` → chạy được TypeScript và hiểu alias
-  `src/*` từ `tsconfig.json`.
+## 1. Commands
 
-## 2. Lựa chọn công cụ
+| Command | What it does |
+|---------|--------------|
+| `yarn test` | Run every `tests/**/*.test.ts` with the compact pretty reporter |
+| `yarn test:watch` | Same, re-running on file changes |
+| `yarn test:coverage` | Run with the `spec` reporter and `--experimental-test-coverage` |
+| `yarn test:types` | Type-check `src/` and `tests/` via `tsconfig.test.json` (no emit) |
 
-| Option | Thêm dep? | Khi nào dùng |
-|--------|-----------|--------------|
-| **`node:test` + `tsx`** (đã chốt) | Không | Đủ cho unit test: `describe/it`, `mock`, coverage, watch |
-| Vitest | Có (`vitest`) | Khi cần UI đẹp, snapshot, mock module mạnh hơn |
-| Jest | Có (`jest`, `ts-jest`, `@types/jest`) | Không khuyên — config TS + alias rườm rà |
+`tsx` only strips types, and `yarn build` excludes tests, so run
+`yarn test:types` after changing tests to catch type errors.
 
-Đã kiểm tra: `npx tsx --test <file>` chạy OK với import `src/helpers/ip-resolver`.
-
-## 3. Setup (1 bước)
-
-Thêm vào `scripts` trong `package.json`:
-
-```json
-"test": "tsx --test \"tests/**/*.test.ts\"",
-"test:watch": "tsx --test --watch \"tests/**/*.test.ts\"",
-"test:coverage": "tsx --test --experimental-test-coverage \"tests/**/*.test.ts\""
-```
-
-Lưu ý: phải để glob trong dấu `"..."` để Node tự expand (zsh/sh expand khác nhau).
-
-Chạy:
+To run a single file:
 
 ```bash
-yarn test
-yarn test:watch
-yarn test:coverage
+npx tsx --test tests/helpers/ip-resolver.test.ts
 ```
 
-## 4. Cấu trúc thư mục
+Keep the glob in `package.json` quoted (`"tests/**/*.test.ts"`) so Node expands
+it instead of the shell (zsh and sh expand `**` differently).
 
-Đặt test trong `tests/`, **mirror** cấu trúc `src/`:
+## 2. Layout
 
 ```text
-src/helpers/ip-resolver.ts                 → tests/helpers/ip-resolver.test.ts
-src/utils/get-error-message.ts             → tests/utils/get-error-message.test.ts
-src/http/errors/http-error.ts              → tests/http/errors/http-error.test.ts
-src/http/middlewares/not-found-handler.ts  → tests/http/middlewares/not-found-handler.test.ts
+tests/
+├── reporters/pretty-reporter.mts   # custom node:test reporter used by `yarn test`
+├── tsconfig.json                   # extends ../tsconfig.test.json for the editor
+├── app/config-loader/schema/       # Zod schema rules
+├── helpers/                        # ip-resolver
+├── http/errors/                    # http-error
+├── http/middlewares/               # error-handler, validate-request
+├── scripts/db/helpers/             # migration-column-parser / -renderer
+└── utils/                          # get-error-message, resolve-project-root
 ```
 
-Quy ước:
+Conventions:
 
-- Tên file: `<tên-file-gốc>.test.ts` (kebab-case, giống `docs/code-standards.md`).
-- Import code bằng alias `src/...`, không dùng `../../src/...`.
-- Mỗi `describe` = 1 function/class, mỗi `it` = 1 hành vi.
+- Mirror the source path: `src/a/b.ts` → `tests/a/b.test.ts`,
+  `scripts/a/b.ts` → `tests/scripts/a/b.test.ts`.
+- File name: `<source-file-name>.test.ts` (kebab-case).
+- Import code under `src/` through the `src/...` alias, never `../../src/...`.
+  Code under `scripts/` has no alias, so import it with a relative path.
+- One `describe` per function or class; one `it` per behavior.
+- Bug fix in a covered file → add an `it` that fails without the fix.
 
-## 5. Mẫu test
+## 3. Patterns
 
-### 5.1 Pure function — `IPResolver.identifyVersion`
+### 3.1 Table-driven cases
 
-Đây là chỗ nên bắt đầu: logic thuần, nhiều nhánh, không phụ thuộc DB/Redis.
+Best for parsers and validators: adding a case is one line.
 
 ```ts
-// tests/helpers/ip-resolver.test.ts
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import IPResolver from 'src/helpers/ip-resolver';
 
 describe('IPResolver.identifyVersion', () => {
   const cases: Array<[string, number]> = [
-    ['192.168.1.1', 4],
     ['192.168.1.0/24', 4],
-    ['10.0.0.0/0', 4],
-    ['10.0.0.0/32', 4],
-    ['10.0.0.0/33', 0],     // vượt max CIDR v4
-    ['10.0.0.0/024', 0],    // leading zero bị từ chối
-    ['::1', 6],
+    ['10.0.0.0/33', 0],     // exceeds max CIDR v4
     ['2001:db8::/32', 6],
-    ['2001:db8::/128', 6],
-    ['2001:db8::/129', 0],  // vượt max CIDR v6
-    ['1.2.3.4/24/8', 0],    // nhiều hơn 1 dấu '/'
-    ['not-an-ip', 0],
-    ['', 0],
   ];
 
   for (const [input, expected] of cases) {
@@ -97,136 +79,84 @@ describe('IPResolver.identifyVersion', () => {
 });
 ```
 
-Table-driven như trên giúp thêm case mới chỉ bằng 1 dòng.
+See also `tests/app/config-loader/schema/redis.schema.test.ts` (accept/reject
+table) and `tests/scripts/db/helpers/migration-column-renderer.test.ts`.
 
-### 5.2 Error helper — `getErrorMessage`
+### 3.2 Express middleware with a fake `req` / `res` / `next`
 
-```ts
-// tests/utils/get-error-message.test.ts
-import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
-import { getErrorMessage } from 'src/utils/get-error-message';
-
-describe('getErrorMessage', () => {
-  it('lấy message từ Error', () => {
-    assert.equal(getErrorMessage(new Error('boom')), 'boom');
-  });
-
-  it('trả nguyên string', () => {
-    assert.equal(getErrorMessage('oops'), 'oops');
-  });
-
-  it('JSON hoá object không có message', () => {
-    assert.equal(getErrorMessage({ a: 1 }), '{"a":1}');
-  });
-
-  it('không crash với object vòng lặp', () => {
-    const circular: Record<string, unknown> = {};
-    circular.self = circular;
-    assert.equal(typeof getErrorMessage(circular), 'string');
-  });
-});
-```
-
-### 5.3 Express middleware — fake `req` / `res` / `next`
-
-Middleware chỉ là function `(req, res, next)`, không cần chạy server:
+A middleware is just a function; no server is needed. Capture what `res`
+receives with a small chainable stub:
 
 ```ts
-// tests/http/middlewares/not-found-handler.test.ts
-import { it, mock } from 'node:test';
-import assert from 'node:assert/strict';
-import type { Request, Response } from 'express';
-import { notFoundHandler } from 'src/http/middlewares/not-found-handler';
-import { BaseHttpError } from 'src/http/errors/http-error';
-
-it('gọi next() với lỗi 404', () => {
-  const req = { method: 'GET', originalUrl: '/missing' } as Request;
-  const next = mock.fn();
-
-  notFoundHandler(req, {} as Response, next);
-
-  assert.equal(next.mock.callCount(), 1);
-  const err = next.mock.calls[0]?.arguments[0];
-  assert.ok(err instanceof BaseHttpError);
-  assert.equal(err.status, 404);
-  assert.equal(err.message, 'Cannot GET /missing');
-});
+function run(err: unknown) {
+  const sent: { status?: number; body?: any } = {};
+  const res = {
+    status(code: number) { sent.status = code; return this; },
+    json(body: unknown) { sent.body = body; return this; },
+  } as unknown as Response;
+  const req = { method: 'GET', originalUrl: '/x' } as Request;
+  errorHandler(err, req, res, (() => {}) as NextFunction);
+  return sent;
+}
 ```
 
-Khi test middleware cần `res.status().json()`, tạo fake chainable:
+For async middleware (`validateRequest`), `await` the returned promise and
+record the argument passed to `next`. See
+`tests/http/middlewares/validate-request.test.ts`.
+
+### 3.3 Zod schemas
+
+Test only the rules beyond plain shape (`min`, `regex`, `refine`, defaults),
+via `SCHEMA.safeParse(input).success` or `SCHEMA.parse(input)` for defaults.
+
+### 3.4 Filesystem helpers
+
+Use a throwaway directory from `fs.mkdtempSync(path.join(os.tmpdir(), ...))`
+and remove it in `after()`. See `tests/utils/resolve-project-root.test.ts`.
+
+### 3.5 Silencing the logger
+
+Modules that log on error paths (e.g. `error-handler.ts`) write to the
+console and `logs/`. Silence them in the test file:
 
 ```ts
-const res = {
-  status: mock.fn(function (this: unknown) { return this; }),
-  json: mock.fn(),
-} as unknown as Response;
+import { logger } from 'src/utils/logger';
+
+before(() => { logger.silent = true; });
 ```
 
-## 6. Nên test cái gì trước
+## 4. Mocking
 
-Theo thứ tự ưu tiên (logic thuần → dễ test → đáng tiền nhất):
-
-1. `src/helpers/ip-resolver.ts` — `identifyVersion`, và `matchIPRules` khi
-   anh implement (viết test trước rồi implement = TDD, rất hợp cho CIDR/bitmask).
-2. `src/http/errors/http-error.ts` — các static method (`HttpError.notFound()`…),
-   `toJSON()` có/không có `details`.
-3. `src/utils/get-error-message.ts`.
-4. `src/http/middlewares/*` — `not-found-handler`, `error-handler`,
-   `ip-black-list`/`ip-allow-list` (sau khi implement).
-5. `src/app/config-loader/schema/*` — `SCHEMA.safeParse(...)` với input hợp lệ
-   và không hợp lệ.
-
-**Không unit test** `src/app/connections/*` (DB/Redis) và migration — đó là
-việc của integration test, cần Postgres/Redis thật. Để sau.
-
-## 7. Mock khi cần
-
-`node:test` có sẵn `mock`:
+`node:test` ships with `mock`:
 
 ```ts
 import { mock } from 'node:test';
 
-const fn = mock.fn();                       // spy function
-mock.method(someObject, 'methodName', () => 'fake');  // thay method
-mock.timers.enable({ apis: ['Date'] });     // giả thời gian
-// mock.restoreAll() trong afterEach nếu dùng mock.method
+const fn = mock.fn();                                 // spy function
+mock.method(someObject, 'methodName', () => 'fake');  // replace a method
+mock.timers.enable({ apis: ['Date'] });               // fake time
+// call mock.restoreAll() in afterEach when using mock.method
 ```
 
-Nếu thấy cần mock cả module (ví dụ chặn import `logger`), đó là dấu hiệu nên
-tách logic thuần ra function riêng để test, thay vì mock.
+If you need to mock a whole module, extract the pure logic into its own
+function and test that instead.
 
-## 8. Type check cho test (tuỳ chọn)
+## 5. Not Unit-Tested Yet
 
-`tsx` **không** type-check, chỉ strip type. `yarn build` cũng không check test
-vì `tsconfig.json` exclude chúng. Nếu muốn bắt lỗi type trong test, tạo
-`tsconfig.test.json`:
-
-```json
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": { "noEmit": true, "rootDir": "./" },
-  "include": ["src/**/*", "tests/**/*"],
-  "exclude": ["node_modules", "dist"]
-}
-```
-
-và script: `"test:types": "tsc -p tsconfig.test.json"`.
-
-## 9. Sau khi xong
-
-- Cập nhật mục **Verification** trong `docs/agent-context.md`: thêm `yarn test`,
-  bỏ dòng "There is no configured automated test suite currently".
-- Xoá `tests/.gitkeep` khi đã có file test.
-- (Sau này) thêm `yarn test` vào CI nếu có pipeline.
+| Code | Reason | Unblock by |
+|------|--------|------------|
+| `buildSequelizeOptions` (`src/app/connections/database.ts`) | Importing the module constructs `appDb`, which loads and validates TOML config; it passes only when a local `config/<env>.local.toml` exists | Move the function into its own module |
+| `ip-allow-list.ts`, `ip-black-list.ts`, `IPResolver.matchIPRules` | Not implemented yet | Write tests first, then implement (TDD fits CIDR/bitmask logic) |
+| `src/app/connections/*`, migrations | Need real PostgreSQL/Redis | Integration tests (none yet) |
 
 ## Checklist
 
-- [ ] Thêm script `test`, `test:watch`, `test:coverage` vào `package.json`
-- [ ] `tests/helpers/ip-resolver.test.ts` cho `identifyVersion`
-- [ ] Viết test cho `matchIPRules` trước khi implement
-- [ ] `tests/http/errors/http-error.test.ts`
-- [ ] `tests/utils/get-error-message.test.ts`
-- [ ] `tests/http/middlewares/not-found-handler.test.ts`
-- [ ] (Tuỳ chọn) `tsconfig.test.json` + `test:types`
-- [ ] Cập nhật `docs/agent-context.md`
+- [x] `test`, `test:watch`, `test:coverage`, `test:types` scripts
+- [x] `tsconfig.test.json` and `tests/tsconfig.json`
+- [x] Pretty reporter (`tests/reporters/pretty-reporter.mts`)
+- [x] Tests for the files required by `docs/code-standards.md`
+- [x] `docs/agent-context.md` Verification section mentions `yarn test`
+- [ ] Testable `buildSequelizeOptions` (see section 5)
+- [ ] Tests for `matchIPRules` before implementing it
+- [ ] Tests for `ip-allow-list` / `ip-black-list` once implemented
+- [ ] Run `yarn test` in CI once a pipeline exists
