@@ -50,7 +50,8 @@ abstract class IPResolver {
     return this.IP_VERSION.INVALID;
   }
 
-  static matchIPRule(input: string, rule: string): boolean {
+  static matchIPRules(input: string, rules: string[]): boolean {
+    // TODO: Implement later after the node:test
     return true;
   }
 }
