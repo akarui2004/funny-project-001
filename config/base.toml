@@ -1,6 +1,28 @@
 [env]
 port = 3000
 
+[http]
+  trustProxy = false
+  [http.cors]
+    origins = []      # empty = deny cross-origin
+  [http.rateLimit]
+    windowMs = 60000
+    limit = 100
+  [http.manager]
+    allowCidrs = []   # empty = allow all (dev); set in production
+
+[auth]
+  issuer = 'fund-project'
+  jwtSecret = ''
+  [auth.accessTtlSeconds]
+    api = 900
+    ops = 900
+    manager = 900
+  [auth.refreshTtlSeconds]
+    api = 2592000
+    ops = 604800
+    manager = 86400
+
 [datasource]
   [datasource.master]
     dialect = "postgres"

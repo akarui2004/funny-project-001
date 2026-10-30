@@ -28,6 +28,11 @@ const bootstrap = async () => {
   const app = express();
   app.use(express.json());
 
+  // Trust proxy headers
+  // Only enable if the app is behind a reverse proxy/load balancer
+  // and not directly public.
+  // app.set('trust proxy', true);
+
   const appPort = appConfig.env.port;
   httpServer = app.listen(appPort, () => {
     logger.info(`Server running at port: ${appPort}`);
