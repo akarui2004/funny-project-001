@@ -19,6 +19,11 @@ for implementation details.
 - Preserve the `src/*` TypeScript path alias and run the build after source
   changes.
 - Follow [`docs/code-standards.md`](code-standards.md) for coding conventions.
+- Put tests in `tests/` mirroring `src/` (`src/a/b.ts` → `tests/a/b.test.ts`),
+  import via the `src/...` alias, one `describe` per function/class and one
+  `it` per behavior. Unit-test parsers, validators, security rules, error
+  mapping, and branching helpers; skip startup, barrels, types, and code that
+  needs a real DB/Redis. See the Testing section of `docs/code-standards.md`.
 
 ## Entry Points And Owners
 
@@ -59,12 +64,14 @@ Run these commands after relevant changes:
 
 ```bash
 yarn build
+yarn test
 yarn db:migrate
 ```
 
 Only run `yarn db:migrate` when the intended PostgreSQL environment is
-available and the migration change is intentional. There is no configured
-automated test suite currently; do not claim tests passed based on the build.
+available and the migration change is intentional. Run `yarn test`
+(`node:test` via `tsx`) for touched code that has tests; do not claim tests
+passed based on the build.
 
 ## Known Repository Caveats
 

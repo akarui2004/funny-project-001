@@ -15,7 +15,11 @@
     "db:seed:all": "sequelize-cli db:seed:all",
     "db:migration:create": "yarn script ./scripts/db/migration-cli create",
     "config:validate": "yarn script ./scripts/config/config-cli validate",
-    "clean": "rimraf ./dist"
+    "clean": "rimraf ./dist",
+    "test": "tsx --test \"tests/**/*.test.ts\"",
+    "test:types": "tsc -p tsconfig.test.json",
+    "test:watch": "tsx --test --watch \"tests/**/*.test.ts\"",
+    "test:coverage": "tsx --test --experimental-test-coverage \"tests/**/*.test.ts\""
   },
   "nodemonConfig": {
     "watch": [
