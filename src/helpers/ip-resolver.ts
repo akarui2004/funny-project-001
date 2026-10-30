@@ -15,15 +15,17 @@
 
 import net from 'net';
 
-export type IpVersions = 'V4' | 'V6' | 'INVALID';
+export const IP_VERSION = {
+  INVALID: 0,
+  V4: 4,
+  V6: 6,
+};
+
+export type IpVersionNumber = (typeof IP_VERSION)[keyof typeof IP_VERSION];
+export type IpVersionName = keyof typeof IP_VERSION;
 
 abstract class IPResolver {
-  static readonly IP_VERSION: Record<IpVersions, number> = {
-    V4: 4,
-    V6: 6,
-    INVALID: 0,
-  };
-
+  static readonly CIDR_REGEX = /^(0|[1-9]\d{0,2})$/;
   static readonly MAX_CIDR_V4 = 32;
   static readonly MAX_CIDR_V6 = 128;
 
@@ -31,23 +33,16 @@ abstract class IPResolver {
   private constructor() { }
 
   static identifyVersion(input: string): number {
-    const segments = input.split('/');
-    if (segments.length > 2) return this.IP_VERSION.INVALID;
+    const [ip = '', cidr, ...rest] = input.split('/');
+    const version = net.isIP(ip) as IpVersionNumber;
 
-    const [ip = '', cidr] = segments;
-    const ipVersion = net.isIP(ip);
+    if (!version || rest.length) return IP_VERSION.INVALID;
+    if (cidr === undefined) return version;
 
-    if (ipVersion !== this.IP_VERSION.INVALID) {
-      if (cidr === undefined) return ipVersion;
+    const max = version === IP_VERSION.V4 ? this.MAX_CIDR_V4 : this.MAX_CIDR_V6;
+    const isValidCidr = this.CIDR_REGEX.test(cidr) && Number(cidr) <= max;
 
-      if (/^(0|[1-9]\d{0,2})$/.test(cidr)) {
-        const cidrNum = Number(cidr);
-        const max = ipVersion === this.IP_VERSION.V4 ? this.MAX_CIDR_V4 : this.MAX_CIDR_V6;
-        if (cidrNum >= 0 && cidrNum <= max) return ipVersion;
-      }
-    }
-
-    return this.IP_VERSION.INVALID;
+    return isValidCidr ? version : IP_VERSION.INVALID;
   }
 
   static matchIPRules(input: string, rules: string[]): boolean {
