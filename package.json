@@ -16,10 +16,10 @@
     "db:migration:create": "yarn script ./scripts/db/migration-cli create",
     "config:validate": "yarn script ./scripts/config/config-cli validate",
     "clean": "rimraf ./dist",
-    "test": "tsx --test \"tests/**/*.test.ts\"",
+    "test": "tsx --test --test-reporter=./tests/reporters/pretty-reporter.mts \"tests/**/*.test.ts\"",
     "test:types": "tsc -p tsconfig.test.json",
-    "test:watch": "tsx --test --watch \"tests/**/*.test.ts\"",
-    "test:coverage": "tsx --test --experimental-test-coverage \"tests/**/*.test.ts\""
+    "test:watch": "tsx --test --test-reporter=./tests/reporters/pretty-reporter.mts --watch \"tests/**/*.test.ts\"",
+    "test:coverage": "tsx --test --test-reporter=spec --experimental-test-coverage \"tests/**/*.test.ts\""
   },
   "nodemonConfig": {
     "watch": [
