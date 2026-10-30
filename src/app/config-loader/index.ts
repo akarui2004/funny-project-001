@@ -75,6 +75,8 @@ class AppConfig extends ConfigManager {
     return this._loadedFiles;
   }
   public get env() { return this.raw.env; }
+  public get http() { return this.raw.http; }
+  public get auth() { return this.raw.auth; }
   public get datasource() { return this.raw.datasource; }
   public get redis() { return this.raw.redis; }
 }
