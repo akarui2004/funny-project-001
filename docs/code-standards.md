@@ -108,6 +108,49 @@ Conventions already used in the codebase; follow them for new code:
   operation is not safe to retry.
 - Disconnect all clients during graceful shutdown.
 
+## Testing
+
+Tests use `node:test` run through `tsx` (`yarn test`). Place them in `tests/`,
+mirroring the `src/` layout:
+
+```text
+src/helpers/ip-resolver.ts                 → tests/helpers/ip-resolver.test.ts
+src/utils/get-error-message.ts             → tests/utils/get-error-message.test.ts
+src/http/errors/http-error.ts              → tests/http/errors/http-error.test.ts
+src/http/middlewares/not-found-handler.ts  → tests/http/middlewares/not-found-handler.test.ts
+```
+
+- Name test files `<source-file-name>.test.ts` (kebab-case, same as the source).
+- Import code under test through the `src/...` alias, never `../../src/...`.
+- One `describe` per function or class; one `it` per behavior.
+
+### What Needs Unit Tests
+
+Unit-test a file when it has branching, parsing, or transformation logic **and**
+runs without network, database, or Redis. Mock nothing heavier than an Express
+`req`/`res`/`next` stub.
+
+| Required | Why | Examples |
+|----------|-----|----------|
+| Parsers and validators | Many input shapes, easy to break silently | `src/helpers/ip-resolver.ts`, `scripts/db/helpers/migration-column-parser.ts` |
+| Security and access rules | A bug lets the wrong request through | `ip-allow-list.ts`, `ip-black-list.ts`, auth checks |
+| Error to HTTP response mapping | Response contract; must not leak internals on 5xx | `error-handler.ts`, `http-error.ts`, `validate-request.ts` |
+| Pure helpers with branches | Cheap to test, reused widely | `src/utils/get-error-message.ts` |
+| Mappings shared by two consumers | Drift breaks both sides | `buildSequelizeOptions`, `migration-column-renderer.ts` |
+| Custom Zod rules | Only rules beyond plain shape (`min`, `regex`, `refine`) | `http.schema.ts` limits |
+| Business logic in services | Core behavior; add as services are written | future `src/**/services/` |
+
+Skip unit tests for:
+
+- Composition and startup (`src/server.ts`), barrels (`index.ts`), `*.type.ts`,
+  constants, and declarative column helpers (`migration-blueprint.ts`).
+- Connection managers (`src/app/connections/`) and migrations; they need real
+  PostgreSQL/Redis and belong in integration tests.
+- Trivial one-liners and thin wrappers over a library (`logger.ts`,
+  `not-found-handler.ts`) unless they gain logic.
+
+A bug fix in a covered file adds an `it` that fails without the fix.
+
 ## Verification
 
 Before reporting a change complete:
@@ -123,6 +166,5 @@ intended for that environment:
 yarn db:migrate
 ```
 
-There is currently no configured automated test suite or formatter/linter.
-Avoid claiming tests, lint, or formatting checks passed unless such tooling is
-added and actually run.
+Run `yarn test` when tests exist for the touched code. There is no
+formatter/linter; do not claim lint or formatting checks passed.
