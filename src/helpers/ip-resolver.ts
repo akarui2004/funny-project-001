@@ -15,40 +15,42 @@
 
 import net from 'net';
 
-export const IP_VERSION = {
-  INVALID: 0,
-  V4: 4,
-  V6: 6,
-};
+export const IP_VERSION = { INVALID: 0, V4: 4, V6: 6 } as const;
 
 export type IpVersionNumber = (typeof IP_VERSION)[keyof typeof IP_VERSION];
 export type IpVersionName = keyof typeof IP_VERSION;
 
-abstract class IPResolver {
-  static readonly CIDR_REGEX = /^(0|[1-9]\d{0,2})$/;
-  static readonly MAX_CIDR_V4 = 32;
-  static readonly MAX_CIDR_V6 = 128;
+const CIDR_REGEX = /^(0|[1-9]\d{0,2})$/;
+const MAX_CIDR_V4 = 32;
+const MAX_CIDR_V6 = 128;
 
-  // Prevent the instantiation
-  private constructor() { }
+export function getIPVersion(input: string): IpVersionNumber {
+  const slashIndex = input.indexOf('/');
 
-  static identifyVersion(input: string): number {
-    const [ip = '', cidr, ...rest] = input.split('/');
-    const version = net.isIP(ip) as IpVersionNumber;
-
-    if (!version || rest.length) return IP_VERSION.INVALID;
-    if (cidr === undefined) return version;
-
-    const max = version === IP_VERSION.V4 ? this.MAX_CIDR_V4 : this.MAX_CIDR_V6;
-    const isValidCidr = this.CIDR_REGEX.test(cidr) && Number(cidr) <= max;
-
-    return isValidCidr ? version : IP_VERSION.INVALID;
+  // Pure IP without CIDR subnet
+  if (slashIndex === -1) {
+    return (net.isIP(input) as IpVersionNumber) || IP_VERSION.INVALID;
   }
 
-  static matchIPRules(input: string, rules: string[]): boolean {
-    // TODO: Implement later after the node:test
-    return true;
+  // More than 1 slash in the IP input string
+  if (input.indexOf('/', slashIndex + 1) !== -1) {
+    return IP_VERSION.INVALID;
   }
+
+  const ip = input.slice(0, slashIndex);
+  const version = net.isIP(ip) as IpVersionNumber;
+  if (!version) return IP_VERSION.INVALID;
+
+  // check the pattern of the CIDR prefix
+  const cidrStr = input.slice(slashIndex + 1);
+  if (!CIDR_REGEX.test(cidrStr)) return IP_VERSION.INVALID;
+
+  // Check the prefix follow by version
+  const maxPrefix = version === IP_VERSION.V4 ? MAX_CIDR_V4 : MAX_CIDR_V6;
+  return Number(cidrStr) <= maxPrefix ? version : IP_VERSION.INVALID;
 }
 
-export default IPResolver;
+export function matchIPRules(input: string, rules: string[]): boolean {
+  // TODO: Implement later after the node:test
+  return true;
+}

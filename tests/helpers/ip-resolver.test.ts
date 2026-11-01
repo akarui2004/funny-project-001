@@ -1,8 +1,8 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import IPResolver from 'src/helpers/ip-resolver';
+import { getIPVersion } from 'src/helpers/ip-resolver';
 
-describe('IPResolver.identifyVersion', () => {
+describe('getIPVersion', () => {
   const cases: Array<[string, number]> = [
     ['192.168.1.1', 4],
     ['192.168.1.0/24', 4],
@@ -21,7 +21,7 @@ describe('IPResolver.identifyVersion', () => {
 
   for (const [input, expected] of cases) {
     it(`"${input}" → ${expected}`, () => {
-      assert.equal(IPResolver.identifyVersion(input), expected);
+      assert.equal(getIPVersion(input), expected);
     });
   }
 });
