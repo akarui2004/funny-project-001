@@ -20,7 +20,7 @@ describe('getIPVersion', () => {
   ];
 
   for (const [input, expected] of cases) {
-    it(`"${input}" → ${expected}`, () => {
+    it(`given "${input}", returns ${expected ? `IPv${expected}` : 'not an IP (0)'}`, () => {
       assert.equal(getIPVersion(input), expected);
     });
   }

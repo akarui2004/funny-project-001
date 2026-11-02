@@ -124,6 +124,29 @@ src/http/middlewares/not-found-handler.ts  → tests/http/middlewares/not-found-
 - Import code under test through the `src/...` alias, never `../../src/...`.
 - One `describe` per function or class; one `it` per behavior.
 
+### Test Case Names
+
+Start every `it` title with a lowercase keyword, then a short phrase or
+sentence that qualifies it. Add the expected outcome after a comma when the
+qualifier only states a condition.
+
+| Keyword | Use for | Example |
+|---------|---------|---------|
+| `given` | Precondition or state | `given an IPv4-mapped IPv6 address, returns the IPv4 part` |
+| `when` | Trigger or action | `when the header is missing, falls back to the socket address` |
+| `with` / `without` | Input variant present or absent | `without details, omits the details field` |
+| `for` | Category of input | `for loopback addresses, returns version 4` |
+| `if` / `unless` | Conditional behavior | `unless a code is given, uses UNKNOWN_ERROR` |
+| `while` | Behavior during an ongoing state | `while shutting down, rejects new connections` |
+| `after` / `before` | Ordering | `after parsing, replaces request data in place` |
+| `which` | Selection among alternatives | `which proxy hop wins when several are listed` |
+| `why` | Reason behind a rule, usually a regression | `why a 5xx hides its message: avoids leaking internals` |
+| `how` | Mechanism or format of the result | `how details are grouped by path` |
+
+- Pick the keyword that matches the intent; do not start with a bare verb
+  (`returns`, `throws`, `should`).
+- Keep the title one line; no trailing period.
+
 ### What Needs Unit Tests
 
 Unit-test a file when it has branching, parsing, or transformation logic **and**
