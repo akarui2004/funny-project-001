@@ -1,4 +1,4 @@
-import { getIPVersion, IP_VERSION } from 'src/helpers/ip-resolver';
+import { getIPVersion, IP_VERSION } from 'src/helpers/ip-helper';
 import { IPV6AddressInfo } from 'src/types';
 
 export function parseIPV6(input: string): IPV6AddressInfo {

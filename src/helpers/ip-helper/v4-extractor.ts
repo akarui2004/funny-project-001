@@ -1,4 +1,4 @@
-import { getIPVersion, IP_VERSION } from 'src/helpers/ip-resolver';
+import { getIPVersion, IP_VERSION } from 'src/helpers/ip-helper';
 import { IPV4AddressInfo } from 'src/types';
 
 export function parseIPV4(input: string): IPV4AddressInfo {
