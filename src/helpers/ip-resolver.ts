@@ -14,6 +14,8 @@
  */
 
 import net from 'net';
+import { IPV4AddressInfo, UnsignedBigInteger, UnsignedInteger } from 'src/types';
+import { toUBigInt, toUInt } from 'src/utils';
 
 export const IP_VERSION = { INVALID: 0, V4: 4, V6: 6 } as const;
 
@@ -54,3 +56,11 @@ export function matchIPRules(input: string, rules: string[]): boolean {
   // TODO: Implement later after the node:test
   return true;
 }
+
+// function parseIPV4(ip: string): UnsignedInteger {
+//   return toUInt(0);
+// }
+
+// function convertIPV6ToNumber(ip: string): UnsignedBigInteger {
+//   return toUBigInt(0);
+// }
