@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { BaseHttpError, HTTP_ERRORS, HttpError } from 'src/http/errors/http-error';
 
 describe('BaseHttpError', () => {
-  it('is an Error with name, status and message', () => {
+  it('given a new error, it is an Error with name, status and message', () => {
     const err = new HttpError(418, 'teapot');
     assert.ok(err instanceof Error);
     assert.ok(err instanceof BaseHttpError);
@@ -12,11 +12,11 @@ describe('BaseHttpError', () => {
     assert.equal(err.message, 'teapot');
   });
 
-  it('falls back to UNKNOWN_ERROR code when none is given', () => {
+  it('without a code, falls back to UNKNOWN_ERROR', () => {
     assert.equal(new HttpError(400, 'x').code, BaseHttpError.UNKNOWN_ERROR_CODE);
   });
 
-  it('keeps code, details and cause from options', () => {
+  it('with options, keeps code, details and cause', () => {
     const cause = new Error('root');
     const err = new HttpError(409, 'dup', { code: 'DUP', details: { id: 1 }, cause });
     assert.equal(err.code, 'DUP');
@@ -24,7 +24,7 @@ describe('BaseHttpError', () => {
     assert.equal(err.cause, cause);
   });
 
-  it('toJSON includes details only when defined', () => {
+  it('when serialized to JSON, includes details only if defined', () => {
     assert.deepEqual(new HttpError(400, 'bad').toJSON(), { status: 400, message: 'bad' });
     assert.deepEqual(
       new HttpError(400, 'bad', { details: { a: 1 } }).toJSON(),
@@ -35,7 +35,7 @@ describe('BaseHttpError', () => {
 
 describe('HttpError factories', () => {
   for (const [key, def] of Object.entries(HTTP_ERRORS)) {
-    it(`${key}() uses status ${def.status} and default message`, () => {
+    it(`for ${key}(), uses status ${def.status} and the default message`, () => {
       const factory = (HttpError as unknown as Record<string, () => BaseHttpError>)[key]!;
       const err = factory();
       assert.ok(err instanceof HttpError);
@@ -44,7 +44,7 @@ describe('HttpError factories', () => {
     });
   }
 
-  it('custom message and options override the defaults', () => {
+  it('with a custom message and options, overrides the defaults', () => {
     const err = HttpError.notFound('no user', { details: { id: 7 } });
     assert.equal(err.message, 'no user');
     assert.deepEqual(err.details, { id: 7 });

@@ -13,15 +13,15 @@ describe('resolveRootDir', () => {
 
   after(() => fs.rmSync(root, { recursive: true, force: true }));
 
-  it('returns the start dir when it holds the marker', () => {
+  it('when the start dir holds the marker, returns it', () => {
     assert.equal(resolveRootDir(root, '.marker'), root);
   });
 
-  it('walks up to the nearest ancestor holding the marker', () => {
+  it('when only an ancestor holds the marker, walks up to the nearest one', () => {
     assert.equal(resolveRootDir(nested, '.marker'), root);
   });
 
-  it('throws when no ancestor holds the marker', () => {
+  it('when no ancestor holds the marker, throws', () => {
     assert.throws(() => resolveRootDir(nested, `.missing-${process.pid}`), /not found in any parent directory/);
   });
 });

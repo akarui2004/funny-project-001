@@ -3,22 +3,33 @@
  * Block known spam, brute-force and abusive IPs
  * Combine with rate-limit to auto-ban
  *
- * Blacklist cases to support
- * |        TYPE        |       EXAMPLE         |         MATCH METHOD        |
- * |  Single IPv4       | 192.168.1.100         | String compare/normalize    |
- * |  IPv4 CIDR         | 192.168.1.0/24        | Bitmask compare             |
- * |  Single IPv6       | ::1                   | Normalize then compare      |
- * |  IPv6 CIDR         | 2001:db8::/32         | Bitmask compare             |
- * |  Wildcard          | 192.168.*.*           | Convert to regex            |
- * |  IPv4-mapped IPv6  | ::ffff:192.168.1.1    | Normalize to IPv4           |
+ * Supported rules: single IPv4/IPv6 and IPv4/IPv6 CIDR. An IPv4-mapped IPv6
+ * client (::ffff:a.b.c.d) is also checked against the IPv4 rules.
  */
 
-export function ipBlacklist(blockedCidrs: string[]) {
-  //  1. retrieve the IP from request, headers, and server headers by using express
-  //  2. normalized IP from (1) to real IPv4, or real IPv6
-  //  3. compare with these matching
-  //    3.1 compare with single IPv4/IPv6
-  //    3.2 compare with IPv4/IPv6 CIDR
-  //    3.3 compare with wildcard regex pattern
-  //  4. should have a function to detect it is IPv4 or IPv6 -> should create helper function
-}
+import type { NextFunction, Request, RequestHandler, Response } from 'express';
+import { matchIPRules } from 'src/helpers';
+import { createModuleLogger } from 'src/utils';
+import { getClientIp } from 'src/utils/get-client-ip';
+import { HTTP_ERRORS, HttpError } from '../errors/http-error';
+
+const logger = createModuleLogger('http');
+
+/**
+ * Reject with 403 any client whose IP matches `blockedRules` (IPs or CIDRs).
+ * An empty list blocks nobody.
+ *
+ * The client IP comes from `getClientIp`; behind a proxy `trust proxy` must be
+ * configured, otherwise every request looks like it comes from the proxy.
+ */
+export const ipBlacklist = (blockedRules: string[]): RequestHandler => {
+  return (req: Request, _res: Response, next: NextFunction): void => {
+    const { ip } = getClientIp(req);
+    if (blockedRules.length > 0 && ip !== null && matchIPRules(ip, blockedRules)) {
+      logger.warn(`Blocked request from blacklisted IP ${ip}`);
+      next(HttpError.forbidden(undefined, { code: HTTP_ERRORS.forbidden.code }));
+      return;
+    }
+    next();
+  };
+};

@@ -5,27 +5,27 @@ import { AUTH_ACCESS_TTL_SCHEMA, AUTH_REFRESH_TTL_SCHEMA, AUTH_SCHEMA } from 'sr
 const ttl = (value: number) => ({ api: value, ops: value, manager: value });
 
 describe('AUTH_ACCESS_TTL_SCHEMA', () => {
-  it('accepts 900 seconds', () => {
+  it('given 900 seconds, accepts it', () => {
     assert.ok(AUTH_ACCESS_TTL_SCHEMA.safeParse(ttl(900)).success);
   });
 
-  it('rejects below 900 seconds', () => {
+  it('given less than 900 seconds, rejects it', () => {
     assert.equal(AUTH_ACCESS_TTL_SCHEMA.safeParse({ ...ttl(900), ops: 899 }).success, false);
   });
 });
 
 describe('AUTH_REFRESH_TTL_SCHEMA', () => {
-  it('accepts 3600 seconds', () => {
+  it('given 3600 seconds, accepts it', () => {
     assert.ok(AUTH_REFRESH_TTL_SCHEMA.safeParse(ttl(3600)).success);
   });
 
-  it('rejects below 3600 seconds', () => {
+  it('given less than 3600 seconds, rejects it', () => {
     assert.equal(AUTH_REFRESH_TTL_SCHEMA.safeParse({ ...ttl(3600), manager: 3599 }).success, false);
   });
 });
 
 describe('AUTH_SCHEMA', () => {
-  it('rejects an empty issuer', () => {
+  it('given an empty issuer, rejects it', () => {
     const input = { issuer: '', accessTtlSeconds: ttl(900), refreshTtlSeconds: ttl(3600) };
     assert.equal(AUTH_SCHEMA.safeParse(input).success, false);
   });
