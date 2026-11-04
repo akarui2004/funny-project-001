@@ -23,7 +23,7 @@ resolves the `src/*` alias from `tsconfig.json`.
 To run a single file:
 
 ```bash
-npx tsx --test tests/helpers/ip-resolver.test.ts
+npx tsx --test tests/helpers/match-ip-rules.test.ts
 ```
 
 Keep the glob in `package.json` quoted (`"tests/**/*.test.ts"`) so Node expands
@@ -36,7 +36,7 @@ tests/
 ├── reporters/pretty-reporter.mts   # custom node:test reporter used by `yarn test`
 ├── tsconfig.json                   # extends ../tsconfig.test.json for the editor
 ├── app/config-loader/schema/       # Zod schema rules
-├── helpers/                        # ip-resolver
+├── helpers/                        # match-ip-rules, ip-helper/ (parsers, version-detector)
 ├── http/errors/                    # http-error
 ├── http/middlewares/               # error-handler, validate-request
 ├── scripts/db/helpers/             # migration-column-parser / -renderer
@@ -62,9 +62,9 @@ Best for parsers and validators: adding a case is one line.
 ```ts
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import IPResolver from 'src/helpers/ip-resolver';
+import { getIPVersion } from 'src/helpers';
 
-describe('IPResolver.identifyVersion', () => {
+describe('getIPVersion', () => {
   const cases: Array<[string, number]> = [
     ['192.168.1.0/24', 4],
     ['10.0.0.0/33', 0],     // exceeds max CIDR v4
@@ -72,8 +72,8 @@ describe('IPResolver.identifyVersion', () => {
   ];
 
   for (const [input, expected] of cases) {
-    it(`"${input}" → ${expected}`, () => {
-      assert.equal(IPResolver.identifyVersion(input), expected);
+    it(`given "${input}", returns ${expected}`, () => {
+      assert.equal(getIPVersion(input), expected);
     });
   }
 });
@@ -146,7 +146,6 @@ function and test that instead.
 | Code | Reason | Unblock by |
 |------|--------|------------|
 | `buildSequelizeOptions` (`src/app/connections/database.ts`) | Importing the module constructs `appDb`, which loads and validates TOML config; it passes only when a local `config/<env>.local.toml` exists | Move the function into its own module |
-| `ip-allow-list.ts`, `ip-black-list.ts`, `IPResolver.matchIPRules` | Not implemented yet | Write tests first, then implement (TDD fits CIDR/bitmask logic) |
 | `src/app/connections/*`, migrations | Need real PostgreSQL/Redis | Integration tests (none yet) |
 
 ## Checklist
@@ -157,6 +156,5 @@ function and test that instead.
 - [x] Tests for the files required by `docs/code-standards.md`
 - [x] `docs/agent-context.md` Verification section mentions `yarn test`
 - [ ] Testable `buildSequelizeOptions` (see section 5)
-- [ ] Tests for `matchIPRules` before implementing it
-- [ ] Tests for `ip-allow-list` / `ip-black-list` once implemented
+- [x] Tests for `ip-allow-list` / `ip-black-list`
 - [ ] Run `yarn test` in CI once a pipeline exists

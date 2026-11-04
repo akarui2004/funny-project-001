@@ -17,7 +17,7 @@ export interface BaseIPAddressInfo<TNum extends number | bigint = number> {
   totalIPs: TNum;
 }
 
-export interface IPV4AddressInfo extends BaseIPAddressInfo<number> { }
-export interface IPV6AddressInfo extends BaseIPAddressInfo<bigint> { }
+export interface IPv4AddressInfo extends BaseIPAddressInfo<number> { }
+export interface IPv6AddressInfo extends BaseIPAddressInfo<bigint> { }
 
-export type IPAddressInfo = IPV4AddressInfo | IPV6AddressInfo;
+export type IPAddressInfo = IPv4AddressInfo | IPv6AddressInfo;

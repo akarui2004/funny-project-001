@@ -1,2 +1,2 @@
 export * from './ip-helper';
-export * from './ip-tables';
+export * from './match-ip-rules';

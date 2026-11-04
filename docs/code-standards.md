@@ -114,7 +114,7 @@ Tests use `node:test` run through `tsx` (`yarn test`). Place them in `tests/`,
 mirroring the `src/` layout:
 
 ```text
-src/helpers/ip-resolver.ts                 → tests/helpers/ip-resolver.test.ts
+src/helpers/match-ip-rules.ts                → tests/helpers/match-ip-rules.test.ts
 src/utils/get-error-message.ts             → tests/utils/get-error-message.test.ts
 src/http/errors/http-error.ts              → tests/http/errors/http-error.test.ts
 src/http/middlewares/not-found-handler.ts  → tests/http/middlewares/not-found-handler.test.ts
@@ -155,7 +155,7 @@ runs without network, database, or Redis. Mock nothing heavier than an Express
 
 | Required | Why | Examples |
 |----------|-----|----------|
-| Parsers and validators | Many input shapes, easy to break silently | `src/helpers/ip-resolver.ts`, `scripts/db/helpers/migration-column-parser.ts` |
+| Parsers and validators | Many input shapes, easy to break silently | `src/helpers/match-ip-rules.ts`, `src/helpers/ip-helper/`, `scripts/db/helpers/migration-column-parser.ts` |
 | Security and access rules | A bug lets the wrong request through | `ip-allow-list.ts`, `ip-black-list.ts`, auth checks |
 | Error to HTTP response mapping | Response contract; must not leak internals on 5xx | `error-handler.ts`, `http-error.ts`, `validate-request.ts` |
 | Pure helpers with branches | Cheap to test, reused widely | `src/utils/get-error-message.ts` |

@@ -1,4 +1,4 @@
-import { IP_VERSION, IPVersionNumber } from 'src/helpers/ip-resolver';
+import { IP_VERSION, IPVersionNumber } from 'src/helpers';
 
 type IPVersionTestCase = [input: string, expected: IPVersionNumber];
 
@@ -16,6 +16,12 @@ export const GET_IP_VERSION_CASES: IPVersionTestCase[] = [
 
   // INVALID: 2 or more slash in an IP string
   ['1.2.3.4/24/8', IP_VERSION.INVALID],
+
+  // INVALID: IPv6 zone id cannot be represented numerically
+  ['fe80::1%eth0', IP_VERSION.INVALID],
+
+  // IP V6 with an embedded IPv4 tail
+  ['::ffff:1.2.3.4', IP_VERSION.V6],
 
   // INVALID: not an IP even it is a string
   ['not-an-ip', IP_VERSION.INVALID], ['', IP_VERSION.INVALID],

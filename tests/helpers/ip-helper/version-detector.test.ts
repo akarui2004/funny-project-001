@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { getIPVersion } from 'src/helpers/ip-resolver';
+import { getIPVersion } from 'src/helpers';
 import { GET_IP_VERSION_CASES } from 'tests/test-cases/get-ip-version-test-cases';
 
 describe('getIPVersion', () => {

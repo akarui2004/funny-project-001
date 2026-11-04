@@ -99,7 +99,7 @@ export const MATCH_IP_TEST_CASES: TestCase[] = [
   // ===========================================================================
   // 6. Edge Cases & Defensive Validation
   // ===========================================================================
-  // Empty rules array -> false
+  // Empty rules array never matches (allow-all policy lives in the allow-list middleware)
   ['192.168.1.1', [], false],
 
   // Empty input string -> false
@@ -113,4 +113,14 @@ export const MATCH_IP_TEST_CASES: TestCase[] = [
 
   // Malformed rule is ignored, matches subsequent valid rule
   ['192.168.1.10', ['invalid-ip-format', '256.0.0.1/32', '192.168.1.0/24'], true],
+
+  // IPv4-mapped IPv6 input is matched against the IPv4 rules of the embedded address
+  ['::ffff:10.0.0.5', ['10.0.0.0/8'], true],
+  ['::ffff:11.0.0.5', ['10.0.0.0/8'], false],
+
+  // IPv4-mapped IPv6 input still matches a plain IPv6 rule
+  ['::ffff:10.0.0.5', ['::ffff:0:0/96'], true],
+
+  // IPv6 zone id is not a valid input
+  ['fe80::1%eth0', ['fe80::/10'], false],
 ];
