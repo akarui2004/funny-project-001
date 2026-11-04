@@ -21,24 +21,24 @@ describe('errorHandler', () => {
   // 5xx and unknown errors are logged; keep test output clean
   before(() => { logger.silent = true; });
 
-  it('maps a 4xx HttpError with its code, message and details', () => {
+  it('given a 4xx HttpError, responds with its code, message and details', () => {
     const sent = run(new HttpError(404, 'gone', { code: 'NOT_FOUND', details: { id: 1 } }));
     assert.equal(sent.status, 404);
     assert.deepEqual(sent.body, { error: { code: 'NOT_FOUND', message: 'gone', details: { id: 1 } } });
   });
 
-  it('omits details when the HttpError has none', () => {
+  it('when the HttpError has no details, omits them', () => {
     const sent = run(new HttpError(400, 'bad', { code: 'BAD_REQUEST' }));
     assert.deepEqual(sent.body, { error: { code: 'BAD_REQUEST', message: 'bad' } });
   });
 
-  it('hides message and details of a 5xx HttpError', () => {
+  it('given a 5xx HttpError, hides its message and details', () => {
     const sent = run(new HttpError(503, 'db password wrong', { code: 'SERVICE_UNAVAILABLE', details: { secret: 1 } }));
     assert.equal(sent.status, 503);
     assert.deepEqual(sent.body, { error: { code: 'SERVICE_UNAVAILABLE', message: 'Internal Server Error' } });
   });
 
-  it('maps a ZodError to 400 INVALID_INPUT with flattened details', () => {
+  it('given a ZodError, responds 400 INVALID_INPUT with flattened details', () => {
     const result = z.object({ name: z.string() }).safeParse({});
     assert.ok(!result.success);
     const sent = run(result.error);
@@ -47,20 +47,20 @@ describe('errorHandler', () => {
     assert.deepEqual(sent.body.error.details, z.flattenError(result.error));
   });
 
-  it('maps a body-parser SyntaxError to 400 INVALID_JSON', () => {
+  it('given a body-parser SyntaxError, responds 400 INVALID_JSON', () => {
     const err = Object.assign(new SyntaxError('Unexpected token'), { status: 400, body: '{bad' });
     const sent = run(err);
     assert.equal(sent.status, 400);
     assert.equal(sent.body.error.code, 'INVALID_JSON');
   });
 
-  it('treats a plain SyntaxError as an unknown 500', () => {
+  it('given a plain SyntaxError, treats it as an unknown 500', () => {
     const sent = run(new SyntaxError('oops'));
     assert.equal(sent.status, 500);
     assert.deepEqual(sent.body, { error: { code: 'INTERNAL_ERROR', message: 'Internal Server Error' } });
   });
 
-  it('maps any unknown error to 500 without leaking its message', () => {
+  it('given any unknown error, responds 500 without leaking its message', () => {
     const sent = run(new Error('stack secrets'));
     assert.equal(sent.status, 500);
     assert.deepEqual(sent.body, { error: { code: 'INTERNAL_ERROR', message: 'Internal Server Error' } });

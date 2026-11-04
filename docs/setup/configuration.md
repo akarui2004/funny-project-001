@@ -7,6 +7,7 @@ This document describes the configuration options available in `base.toml`.
 | Section | Description |
 |---------|-------------|
 | `[env]` | Server environment settings |
+| `[http]` | HTTP behavior: proxy trust, CORS, rate limit, manager access |
 | `[datasource]` | Database connection configuration (supports multiple named sources) |
 | `[redis]` | Redis connection configuration (supports multiple named instances) |
 
@@ -17,6 +18,31 @@ This document describes the configuration options available in `base.toml`.
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `port` | number | `3000` | The port number on which the server will listen for incoming requests. |
+
+---
+
+## [http]
+
+`trustProxy` decides which proxy hops may set `X-Forwarded-For`; it drives
+`req.ip`, the IP allow/black lists and the request log. Forwarding headers are
+plain text any client can send, so trust only the hops you run.
+
+| Deployment | `trustProxy` |
+|------------|--------------|
+| Direct to the internet (EC2 with a public port, local dev) | `false` (default) |
+| Behind one load balancer (ALB / NLB with IP target, Nginx on the same host) | `1` |
+| CDN then load balancer (CloudFront → ALB) | `2` |
+| ECS behind an ALB | `1`; use the ALB subnet CIDRs if the hop count varies |
+| Known proxy addresses | `["10.0.0.0/16"]`, or keywords `loopback`, `linklocal`, `uniquelocal` |
+
+`true` trusts every hop, so a client can choose its own IP; the server logs a
+warning if it is set. A hop count that is too high has the same effect: with
+`trustProxy = 2` but a single proxy, the client-supplied leftmost address wins.
+
+```toml
+[http]
+  trustProxy = 1
+```
 
 ---
 

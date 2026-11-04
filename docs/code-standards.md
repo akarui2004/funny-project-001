@@ -114,7 +114,7 @@ Tests use `node:test` run through `tsx` (`yarn test`). Place them in `tests/`,
 mirroring the `src/` layout:
 
 ```text
-src/helpers/ip-resolver.ts                 → tests/helpers/ip-resolver.test.ts
+src/helpers/match-ip-rules.ts                → tests/helpers/match-ip-rules.test.ts
 src/utils/get-error-message.ts             → tests/utils/get-error-message.test.ts
 src/http/errors/http-error.ts              → tests/http/errors/http-error.test.ts
 src/http/middlewares/not-found-handler.ts  → tests/http/middlewares/not-found-handler.test.ts
@@ -124,6 +124,29 @@ src/http/middlewares/not-found-handler.ts  → tests/http/middlewares/not-found-
 - Import code under test through the `src/...` alias, never `../../src/...`.
 - One `describe` per function or class; one `it` per behavior.
 
+### Test Case Names
+
+Start every `it` title with a lowercase keyword, then a short phrase or
+sentence that qualifies it. Add the expected outcome after a comma when the
+qualifier only states a condition.
+
+| Keyword | Use for | Example |
+|---------|---------|---------|
+| `given` | Precondition or state | `given an IPv4-mapped IPv6 address, returns the IPv4 part` |
+| `when` | Trigger or action | `when the header is missing, falls back to the socket address` |
+| `with` / `without` | Input variant present or absent | `without details, omits the details field` |
+| `for` | Category of input | `for loopback addresses, returns version 4` |
+| `if` / `unless` | Conditional behavior | `unless a code is given, uses UNKNOWN_ERROR` |
+| `while` | Behavior during an ongoing state | `while shutting down, rejects new connections` |
+| `after` / `before` | Ordering | `after parsing, replaces request data in place` |
+| `which` | Selection among alternatives | `which proxy hop wins when several are listed` |
+| `why` | Reason behind a rule, usually a regression | `why a 5xx hides its message: avoids leaking internals` |
+| `how` | Mechanism or format of the result | `how details are grouped by path` |
+
+- Pick the keyword that matches the intent; do not start with a bare verb
+  (`returns`, `throws`, `should`).
+- Keep the title one line; no trailing period.
+
 ### What Needs Unit Tests
 
 Unit-test a file when it has branching, parsing, or transformation logic **and**
@@ -132,7 +155,7 @@ runs without network, database, or Redis. Mock nothing heavier than an Express
 
 | Required | Why | Examples |
 |----------|-----|----------|
-| Parsers and validators | Many input shapes, easy to break silently | `src/helpers/ip-resolver.ts`, `scripts/db/helpers/migration-column-parser.ts` |
+| Parsers and validators | Many input shapes, easy to break silently | `src/helpers/match-ip-rules.ts`, `src/helpers/ip-helper/`, `scripts/db/helpers/migration-column-parser.ts` |
 | Security and access rules | A bug lets the wrong request through | `ip-allow-list.ts`, `ip-black-list.ts`, auth checks |
 | Error to HTTP response mapping | Response contract; must not leak internals on 5xx | `error-handler.ts`, `http-error.ts`, `validate-request.ts` |
 | Pure helpers with branches | Cheap to test, reused widely | `src/utils/get-error-message.ts` |

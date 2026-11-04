@@ -18,12 +18,12 @@ describe('REDIS_SCHEMA keyPrefix', () => {
   ];
 
   for (const [prefix, ok] of cases) {
-    it(`${ok ? 'accepts' : 'rejects'} "${prefix}"`, () => {
+    it(`given the prefix "${prefix}", ${ok ? 'accepts' : 'rejects'} it`, () => {
       assert.equal(REDIS_SCHEMA.safeParse(withPrefix(prefix)).success, ok);
     });
   }
 
-  it('fills connection defaults', () => {
+  it('without connection settings, fills the defaults', () => {
     const parsed = REDIS_SCHEMA.parse(withPrefix('app:'));
     assert.equal(parsed.master.host, 'localhost');
     assert.equal(parsed.master.port, 6379);

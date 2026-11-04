@@ -160,3 +160,6 @@ config/.*.local.toml
 
 # Except for the .gitkeep file
 !/logs/.gitkeep
+# Sublime Text local project files
+*.sublime-project
+*.sublime-workspace

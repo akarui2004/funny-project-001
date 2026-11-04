@@ -28,10 +28,12 @@ const bootstrap = async () => {
   const app = express();
   app.use(express.json());
 
-  // Trust proxy headers
-  // Only enable if the app is behind a reverse proxy/load balancer
-  // and not directly public.
-  // app.set('trust proxy', true);
+  // Which proxy hops may set X-Forwarded-For; see docs/setup/configuration.md ([http] trustProxy)
+  const { trustProxy } = appConfig.http;
+  if (trustProxy === true) {
+    logger.warn('http.trustProxy = true trusts every hop: clients can spoof their IP. Use a hop count or proxy CIDRs.');
+  }
+  app.set('trust proxy', trustProxy);
 
   const appPort = appConfig.env.port;
   httpServer = app.listen(appPort, () => {
