@@ -41,6 +41,7 @@ describe('HttpError factories', () => {
       assert.ok(err instanceof HttpError);
       assert.equal(err.status, def.status);
       assert.equal(err.message, def.message);
+      assert.equal(err.code, def.code);
     });
   }
 
@@ -48,5 +49,9 @@ describe('HttpError factories', () => {
     const err = HttpError.notFound('no user', { details: { id: 7 } });
     assert.equal(err.message, 'no user');
     assert.deepEqual(err.details, { id: 7 });
+  });
+
+  it('with an explicit code option, overrides the default code', () => {
+    assert.equal(HttpError.notFound('x', { code: 'USER_NOT_FOUND' }).code, 'USER_NOT_FOUND');
   });
 });

@@ -63,6 +63,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/mustache": "^4.2.6",
     "@types/node": "^26.0.1",

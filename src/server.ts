@@ -1,7 +1,7 @@
-import express from 'express';
 import { Server } from 'http';
 import { appConfig, appDb, appRedis } from 'src/app';
 import { NODE_ENV } from 'src/constants';
+import { createHttpApp } from 'src/http/create-http-app';
 import { logger } from './utils';
 
 let httpServer: Server | null = null;
@@ -25,15 +25,7 @@ const bootstrap = async () => {
   await appRedis.initialize('queue');
   await appDb.initialize('master');
 
-  const app = express();
-  app.use(express.json());
-
-  // Which proxy hops may set X-Forwarded-For; see docs/setup/configuration.md ([http] trustProxy)
-  const { trustProxy } = appConfig.http;
-  if (trustProxy === true) {
-    logger.warn('http.trustProxy = true trusts every hop: clients can spoof their IP. Use a hop count or proxy CIDRs.');
-  }
-  app.set('trust proxy', trustProxy);
+  const app = createHttpApp(appConfig.http);
 
   const appPort = appConfig.env.port;
   httpServer = app.listen(appPort, () => {

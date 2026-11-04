@@ -3,6 +3,7 @@ port = 3000
 
 [http]
   trustProxy = false
+  jsonLimit = '100kb'  # max JSON request body
   [http.cors]
     origins = []      # empty = deny cross-origin
   [http.rateLimit]
