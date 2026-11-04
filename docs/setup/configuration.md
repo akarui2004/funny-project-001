@@ -39,9 +39,13 @@ plain text any client can send, so trust only the hops you run.
 warning if it is set. A hop count that is too high has the same effect: with
 `trustProxy = 2` but a single proxy, the client-supplied leftmost address wins.
 
+`jsonLimit` is the maximum JSON request body, as a size string such as
+`'100kb'` (default) or `'1mb'`. Larger bodies get a 413.
+
 ```toml
 [http]
   trustProxy = 1
+  jsonLimit = '100kb'
 ```
 
 ---

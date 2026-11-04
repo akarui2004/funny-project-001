@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { HTTP_CORS_SCHEMA, HTTP_RATE_LIMIT_SCHEMA, HTTP_TRUST_PROXY_SCHEMA } from 'src/app/config-loader/schema/http.schema';
+import { HTTP_CORS_SCHEMA, HTTP_JSON_LIMIT_SCHEMA, HTTP_RATE_LIMIT_SCHEMA, HTTP_TRUST_PROXY_SCHEMA } from 'src/app/config-loader/schema/http.schema';
 
 describe('HTTP_RATE_LIMIT_SCHEMA', () => {
   const cases: Array<[string, unknown, boolean]> = [
@@ -49,6 +49,22 @@ describe('HTTP_TRUST_PROXY_SCHEMA', () => {
   for (const [label, input, ok] of cases) {
     it(`for ${label}, ${ok ? 'accepts' : 'rejects'} it`, () => {
       assert.equal(HTTP_TRUST_PROXY_SCHEMA.safeParse(input).success, ok);
+    });
+  }
+});
+
+describe('HTTP_JSON_LIMIT_SCHEMA', () => {
+  const cases: Array<[string, unknown, boolean]> = [
+    ['100kb', '100kb', true],
+    ['1MB (case-insensitive)', '1MB', true],
+    ['a bare number string', '100', false],
+    ['a number (not coerced)', 100, false],
+    ['an unknown unit', '10tb', false],
+  ];
+
+  for (const [label, input, ok] of cases) {
+    it(`for ${label}, ${ok ? 'accepts' : 'rejects'} it`, () => {
+      assert.equal(HTTP_JSON_LIMIT_SCHEMA.safeParse(input).success, ok);
     });
   }
 });

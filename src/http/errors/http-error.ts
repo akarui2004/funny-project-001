@@ -60,7 +60,7 @@ type StaticErrorMethods = {
 
 for (const [key, def] of Object.entries(HTTP_ERRORS)) {
   (BaseHttpError as unknown as Record<string, unknown>)[key] = function <T>(message?: string, options?: HttpErrorOptions<T>) {
-    return new BaseHttpError<T>(def.status, message ?? def.message, options)
+    return new BaseHttpError<T>(def.status, message ?? def.message, { code: def.code, ...options })
   }
 }
 
