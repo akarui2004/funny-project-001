@@ -34,8 +34,14 @@ export const HTTP_MANAGER_SCHEMA = z.object({
   allowCidrs: z.array(z.string().min(1))
 })
 
+// Max JSON request body, in the units body-parser accepts (e.g. '100kb', '1mb')
+export const HTTP_JSON_LIMIT_SCHEMA = z.string().regex(/^\d+(\.\d+)?(b|kb|mb)$/i, {
+  message: "Must be a size like '100kb' or '1mb'",
+});
+
 export const HTTP_SCHEMA = z.object({
   trustProxy: HTTP_TRUST_PROXY_SCHEMA,
+  jsonLimit: HTTP_JSON_LIMIT_SCHEMA,
   cors: HTTP_CORS_SCHEMA,
   rateLimit: HTTP_RATE_LIMIT_SCHEMA,
   manager: HTTP_MANAGER_SCHEMA,
