@@ -5,9 +5,9 @@
   "main": "src/server.ts",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon",
+    "dev": "tsx watch --clear-screen=false --include \"config/*.toml\" -r dotenv/config src/server.ts",
     "start": "yarn clean && yarn build && node dist/server.js",
-    "script": "ts-node -r dotenv/config -r tsconfig-paths/register",
+    "script": "tsx --tsconfig scripts/tsconfig.json -r dotenv/config",
     "console": "npx tsx ./scripts/console.ts",
     "build": "tsc --project ./tsconfig.json && tsc-alias",
     "db:migrate": "yarn script ./scripts/db/migrate-cli migrate up",
@@ -16,22 +16,10 @@
     "db:migration:create": "yarn script ./scripts/db/migration-cli create",
     "config:validate": "yarn script ./scripts/config/config-cli validate",
     "clean": "rimraf ./dist",
-    "test": "tsx --test --test-reporter=./tests/reporters/pretty-reporter.mts \"tests/**/*.test.ts\"",
+    "test": "tsx --tsconfig tsconfig.test.json --test --test-reporter=./tests/reporters/pretty-reporter.mts \"tests/**/*.test.ts\"",
     "test:types": "tsc -p tsconfig.test.json",
-    "test:watch": "tsx --test --test-reporter=./tests/reporters/pretty-reporter.mts --watch \"tests/**/*.test.ts\"",
-    "test:coverage": "tsx --test --test-reporter=spec --experimental-test-coverage \"tests/**/*.test.ts\""
-  },
-  "nodemonConfig": {
-    "watch": [
-      "src"
-    ],
-    "ext": "ts,toml",
-    "ignore": [
-      "dist/**",
-      "logs/**",
-      "scripts/**"
-    ],
-    "exec": "ts-node -r dotenv/config -r tsconfig-paths/register src/server.ts"
+    "test:watch": "tsx --tsconfig tsconfig.test.json --test --test-reporter=./tests/reporters/pretty-reporter.mts --watch \"tests/**/*.test.ts\"",
+    "test:coverage": "tsx --tsconfig tsconfig.test.json --test --test-reporter=spec --experimental-test-coverage \"tests/**/*.test.ts\""
   },
   "dependencies": {
     "ansis": "^4.3.1",
@@ -40,19 +28,15 @@
     "cors": "^2.8.6",
     "date-fns": "^4.2.1",
     "defu": "^6.1.7",
-    "dotenv": "^17.4.2",
+    "dotenv": "^18.0.9",
     "express": "^5.2.1",
     "express-rate-limit": "^8.4.1",
     "helmet": "^8.1.0",
-    "ioredis": "^5.10.1",
+    "ioredis": "^6.0.0",
     "jose": "^6.2.12",
     "kysely": "^0.29.8",
     "pg": "^8.20.0",
     "toml": "^5.0.0",
-    "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0",
-    "tsx": "^4.23.0",
-    "typescript": "5.9.3",
     "uuid": "^14.0.0",
     "winston": "^3.19.0",
     "winston-daily-rotate-file": "^5.0.0",
@@ -63,9 +47,10 @@
     "@types/express": "^5.0.6",
     "@types/node": "^26.0.1",
     "@types/pg": "^8.23.1",
-    "nodemon": "^3.1.14",
     "rimraf": "^6.1.4",
-    "tsc-alias": "^1.9.1"
+    "tsc-alias": "^1.9.1",
+    "tsx": "^4.23.0",
+    "typescript": "7.0.2"
   },
   "resolutions": {
     "minimatch": "^11.0.1"

@@ -8,18 +8,16 @@ This project uses `dotenv` to load environment variables from `.env` files. All 
 
 ### Loading Mechanism
 
-The project uses `dotenv` via the `-r dotenv/config` flag in both the script and nodemonConfig:
+The project uses `dotenv` via the `-r dotenv/config` flag in both the `script` and `dev` scripts:
 
 ```json
 {
-  "script": "ts-node -r dotenv/config -r tsconfig-paths/register",
-  "nodemonConfig": {
-    "exec": "ts-node -r dotenv/config -r tsconfig-paths/register src/server.ts"
-  }
+  "dev": "tsx watch --clear-screen=false --include \"config/*.toml\" -r dotenv/config src/server.ts",
+  "script": "tsx --tsconfig scripts/tsconfig.json -r dotenv/config"
 }
 ```
 
-When `ts-node` runs with `-r dotenv/config`, it:
+When `tsx` runs with `-r dotenv/config`, it:
 1. Loads `.env` file from the project root
 2. Sets all variables as `process.env` properties
 3. Makes all variables available immediately

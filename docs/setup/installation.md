@@ -44,7 +44,7 @@ yarn db:migrate:undo     # revert the last migration
 ## Running
 
 ```bash
-yarn dev      # nodemon + ts-node, reloads on src/**/*.ts and *.toml changes
+yarn dev      # tsx watch, reloads on imported .ts changes and config/*.toml changes
 yarn start    # clean, build, then run the compiled server.js
 ```
 
