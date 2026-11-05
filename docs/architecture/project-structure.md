@@ -10,7 +10,7 @@
 ├── scripts/           # Dev CLI tools (not shipped in dist)
 │   ├── base-cli.ts
 │   ├── console.ts
-│   └── db/            # migration-cli, helpers, mustache template
+│   └── db/            # migrate-cli (up/down/status), migration-cli (empty file)
 ├── src/
 │   ├── server.ts      # Entry point
 │   ├── app/           # Runtime wiring: config + connections
@@ -51,14 +51,9 @@ flowchart TD
         base["base-cli.ts"]
         mig["db/migration-cli.ts"]
         migrate["db/migrate-cli.ts"]
-        helpers["db/helpers/*"]
-        tpl["db/template/migration.mustache"]
     end
 
     mig --> base
-    mig --> helpers
-    mig --> tpl
-    tpl -. generates imports of .-> blueprint
     mig -. writes .-> migrations
     migrate --> base
     migrate --> conn

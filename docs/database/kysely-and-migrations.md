@@ -47,7 +47,7 @@ TOML → `pg.PoolConfig` mapping (`buildPgPoolConfig`):
 | `yarn db:migrate` | Apply all pending migrations of every source |
 | `yarn db:migrate:undo [--source <name>]` | Undo the last migration of one source (default `platform`) |
 | `yarn db:migrate:status` | List each migration as executed (with time) or pending |
-| `yarn db:migration:create <table> -c "<cols>"` | Scaffold a create-table migration from the template |
+| `yarn db:migration:create <name> [--module <m>]` | Create an empty `<timestamp>-<name>.ts` in `src/db/migrations/` (or `src/modules/<m>/migrations/`) |
 
 Like the app, the CLI loads `.env` (through `yarn script`) and the layered TOML config; select the
 environment with `NODE_ENV`. Exit code is `1` when a migration fails.
@@ -67,17 +67,22 @@ inside migrations would fail. Consequence: run migrations from source through `y
 
 ## Migration File Format
 
+Write migrations by hand with the Kysely schema builder; `db:migration:create` only creates the file.
+
 ```ts
+import { sql } from 'kysely';
 import type { Kysely } from 'kysely';
-import * as MigrationUtils from 'src/db/migration-blueprint';
+import { oneOf, primaryKey, softDelete, timestamps } from 'src/db/migration-blueprint';
 
 export async function up(db: Kysely<any>): Promise<void> {
-  await MigrationUtils.addColumns(db.schema.createTable('products'), {
-    id: MigrationUtils.primaryKey(),
-    name: MigrationUtils.genericString(true),
-    ...MigrationUtils.softDeleteColumns,
-    ...MigrationUtils.timestampColumns,
-  }).execute();
+  await db.schema.createTable('products')
+    .$call(primaryKey)
+    .addColumn('name', 'varchar(255)', (col) => col.notNull())
+    .addColumn('price', 'numeric(36, 18)', (col) => col.notNull().defaultTo('0'))
+    .addColumn('status', 'varchar(64)', (col) => col.notNull().defaultTo('draft').check(oneOf('status', ['draft', 'live'])))
+    .$call(softDelete)
+    .$call(timestamps)
+    .execute();
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
@@ -90,24 +95,19 @@ one transaction.
 
 ## Blueprint Helpers (`src/db/migration-blueprint.ts`)
 
-| Helper | PostgreSQL |
-|---|---|
-| `primaryKey()` | `uuid not null primary key default gen_random_uuid()` |
-| `uuid(required, unique)` | `uuid` |
-| `genericString(required, length = 255, default?)` | `varchar(length)` |
-| `text(required)` | `text` |
-| `integer(required, default?)` | `integer` |
-| `unsignedInteger(required, default?)` | `integer` + `check (col >= 0)` |
-| `bigInteger(required, default?: bigint)` | `bigint` |
-| `decimal(required, p = 36, s = 18, default = 0)` | `numeric(p, s)` |
-| `datetime(required, default?)` / `date(...)` | `timestamptz` / `date` |
-| `enumType(values, required, default?)` | `varchar(64)` + `check (col in (...))` (no PG enum type) |
-| `jsonType(required)` | `jsonb` |
-| `foreignKey(refTable, refCol = 'id', required, type = 'uuid', onDelete?, onUpdate?)` | `references` (same module only) |
-| `softDeleteColumns` | `deletedAt timestamptz null` |
-| `timestampColumns` | `createdAt`, `updatedAt` `timestamptz not null default now()` |
+Only project conventions live here; plain column types are written with Kysely directly.
 
-SQL-function defaults are passed as `` sql`now()` ``. `updatedAt` has no trigger: set it on every update.
+| Helper | Use | PostgreSQL |
+|---|---|---|
+| `primaryKey` | `.$call(primaryKey)` | `id uuid default gen_random_uuid() not null primary key` |
+| `softDelete` | `.$call(softDelete)` | `deletedAt timestamptz` |
+| `timestamps` | `.$call(timestamps)` | `createdAt`, `updatedAt` `timestamptz default now() not null` |
+| `oneOf(col, values)` | `col.check(oneOf(...))` | `check (col in (...))`: varchar enum, no PG enum type |
+| `nonNegative(col)` | `col.check(nonNegative(...))` | `check (col >= 0)`: PG has no unsigned types |
+
+Never change what an existing helper emits: migrations replay it on fresh databases, so old and new
+databases would diverge. Add a new helper instead. `tests/db/migration-blueprint.test.ts` pins the DDL.
+`updatedAt` has no trigger: set it on every update.
 
 ## History: Sequelize Baseline
 

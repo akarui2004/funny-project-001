@@ -40,7 +40,7 @@ Conventions already used in the codebase; follow them for new code:
 | Zod schema file | `<name>.schema.ts` | `redis.schema.ts` |
 | Type-only file | `<name>.type.ts` | `config.type.ts` |
 | Folder public API | `index.ts` barrel re-exports | `src/constants/index.ts` |
-| Migration file | `YYYYMMDDHHmmss-<verb>-<noun>.ts`, created via `yarn db:migration:create` | `20260724075029-create-user.ts` |
+| Migration file | `YYYYMMDDHHmmss-<verb>-<noun>.ts`, created via `yarn db:migration:create <verb>-<noun>` | `20260724075029-create-user.ts` |
 | Zod schema constant | `UPPER_SNAKE_CASE` + `_SCHEMA` | `REDIS_SCHEMA` |
 | Type inferred from a schema | `T` prefix + PascalCase | `TRedisSchema` |
 | Interface / class | PascalCase, no `I` prefix | `ParsedField`, `MigrationColumnParser` |
@@ -88,8 +88,9 @@ Conventions already used in the codebase; follow them for new code:
 
 - Treat applied migrations as immutable. Create a new migration for schema
   changes and provide both `up` and `down` operations where rollback is safe.
-- Reuse helpers from `src/db/migration-blueprint.ts` for common columns so
-  nullability, timestamps, and key types remain consistent.
+- Use `primaryKey`, `timestamps`, `softDelete`, `oneOf`, and `nonNegative` from
+  `src/db/migration-blueprint.ts` so key types, timestamps, and enum checks stay
+  consistent. Never change what an existing helper emits; add a new one.
 - Use UUID for every primary and foreign key. Never use auto-increment,
   serial, or bigint ids: they are guessable and allow enumeration.
 - Keep migration names timestamped and describe the schema change clearly.
@@ -161,12 +162,13 @@ runs without network, database, or Redis. Mock nothing heavier than an Express
 
 | Required | Why | Examples |
 |----------|-----|----------|
-| Parsers and validators | Many input shapes, easy to break silently | `src/helpers/match-ip-rules.ts`, `src/helpers/ip-helper/`, `scripts/db/helpers/migration-column-parser.ts` |
+| Parsers and validators | Many input shapes, easy to break silently | `src/helpers/match-ip-rules.ts`, `src/helpers/ip-helper/` |
 | Security and access rules | A bug lets the wrong request through | `ip-allow-list.ts`, `ip-black-list.ts`, auth checks |
 | Error to HTTP response mapping | Response contract; must not leak internals on 5xx | `error-handler.ts`, `http-error.ts`, `validate-request.ts` |
 | Pure helpers with branches | Cheap to test, reused widely | `src/utils/get-error-message.ts` |
-| Mappings shared by two consumers | Drift breaks both sides | `buildPgPoolConfig`, `migration-column-renderer.ts` |
+| Mappings shared by two consumers | Drift breaks both sides | `buildPgPoolConfig` |
 | Custom Zod rules | Only rules beyond plain shape (`min`, `regex`, `refine`) | `http.schema.ts` limits |
+| Migration blueprint helpers | Emitted DDL must never drift (history replays it) | `tests/db/migration-blueprint.test.ts` |
 | Business logic in services | Core behavior; add as services are written | future `src/**/services/` |
 
 Skip unit tests for:

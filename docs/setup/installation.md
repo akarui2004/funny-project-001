@@ -61,7 +61,7 @@ src/
 │   └── connections/     appDb (Kysely + pg pool), appRedis (ioredis)
 ├── db/
 │   ├── migrations/
-│   ├── migration-blueprint.ts   column helpers for migrations
+│   ├── migration-blueprint.ts   column convention helpers for migrations
 │   └── migration-runner.ts      Kysely Migrator + migration sources
 ├── constants/
 └── utils/logger.ts      winston logger, createModuleLogger()
@@ -73,4 +73,4 @@ docs/                    project docs, start with the reading order in README.md
 
 - `yarn build`: compile TypeScript
 - `yarn console`: Node REPL with `.env` loaded
-- `yarn db:migration:create`: available via `scripts/db/migration-cli.ts`; seeder creation is not implemented yet
+- `yarn db:migration:create <name>`: creates an empty migration via `scripts/db/migration-cli.ts`; seeder creation is not implemented yet

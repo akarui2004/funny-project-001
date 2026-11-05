@@ -34,7 +34,7 @@ We use [Kysely](https://kysely.dev) (typed SQL query builder over `pg`) and its 
 yarn db:migrate                          Apply all pending migrations
 yarn db:migrate:undo [--source <name>]   Undo the last migration of one source (default: platform)
 yarn db:migrate:status                   List executed / pending migrations
-yarn db:migration:create <table> -c ...  Scaffold a create-table migration
+yarn db:migration:create <name> [-m <m>] Create an empty timestamped migration
 ```
 See [docs/database/kysely-and-migrations.md](docs/database/kysely-and-migrations.md).
 
