@@ -17,7 +17,7 @@
    - `tests/scripts/db/helpers/migration-column-parser.test.ts`
    - `tests/scripts/db/helpers/migration-column-renderer.test.ts`
    - `tests/utils/resolve-project-root.test.ts` (temp dir with `.app_root`)
-   - `tests/app/connections/build-sequelize-options.test.ts`
+   - `tests/app/connections/build-pg-pool-config.test.ts` (done in the Kysely migration)
    - after phase 1: `tests/http/*.test.ts` with supertest against `createHttpApp({ readinessChecks: stubs })` (no listen, no DB)
    - after phase 1: `tests/http/auth/access-token-service.test.ts` (expired, tampered, `alg: none`, wrong `iss`/`aud`) and `authenticate.test.ts` (wrong `aud` -> 403, denylisted jti/user/tenant -> 401; use an in-memory stub of the revocation store interface, set a test `JWT_SECRET` in the test env)
    - after phase 2: `tests/utils/password-hasher.test.ts` (round trip, wrong password, tampered hash) and `api-key-generator.test.ts` (format, hash compare, wrong secret)

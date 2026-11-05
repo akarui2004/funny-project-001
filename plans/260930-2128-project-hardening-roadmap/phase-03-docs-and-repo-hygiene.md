@@ -1,14 +1,14 @@
 # Phase 3: Docs And Repo Hygiene (priority 3)
 
 ## Context
-README is jokey and stale (`npm start` instead of yarn, Sequelize CLI dump). `docs/configuration.md` (240 lines) vs `docs/environment-configuration.md` (76) may overlap, unverified. `.gitignore` still has `.commandcode` entries. `docs/todos.md` is 3 unstructured lines. Dependencies: dev-only tools sit in `dependencies`; `@types/node` ^26 vs `.node-version` 22.22.0; no `engines`; `resolutions.uuid ^11` vs `dependencies.uuid ^14` with no `uuid` import in `src/` or `scripts/` (unused; ids use `randomUUID` from `node:crypto`).
+README is jokey and stale (`npm start` instead of yarn; Sequelize CLI dump already replaced in the Kysely migration). `docs/configuration.md` (240 lines) vs `docs/environment-configuration.md` (76) may overlap, unverified. `.gitignore` still has `.commandcode` entries. `docs/todos.md` is 3 unstructured lines. Dependencies: dev-only tools sit in `dependencies`; `@types/node` ^26 vs `.node-version` 22.22.0; no `engines`; `resolutions.uuid ^11` vs `dependencies.uuid ^14` with no `uuid` import in `src/` or `scripts/` (unused; ids use `randomUUID` from `node:crypto`).
 
 ## Requirements
 - README: correct yarn commands, repo/URL, links to `docs/installation.md`, `docs/project-structure.md`; tone is anh's call
 - Read both config docs; merge or cross-link, no duplicated facts
 - Clean `.gitignore`
 - `docs/todos.md`: checklist or delete once phase 2 lands
-- Dependency housekeeping: `@types/node` to ^22, add `engines.node >=22`, drop unused `uuid` (check `yarn why uuid` first), move dev-only packages (typescript, ts-node, tsx, nodemon, sequelize-cli, tsconfig-paths, commander, mustache, pluralize, ansis, date-fns) to `devDependencies` **only if** nothing under `src/` imports them at runtime
+- Dependency housekeeping: `@types/node` to ^22, add `engines.node >=22`, drop unused `uuid` (check `yarn why uuid` first), move dev-only packages (typescript, ts-node, tsx, nodemon, tsconfig-paths, commander, mustache, pluralize, ansis, date-fns) to `devDependencies` **only if** nothing under `src/` imports them at runtime
 - Record decision "no ESLint/Prettier" in `docs/code-standards.md`
 
 ## Steps

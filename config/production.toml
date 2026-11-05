@@ -8,4 +8,3 @@
       idle = 5000
     [datasource.master.option]
       ssl = true
-      connectionTimeout = 120000

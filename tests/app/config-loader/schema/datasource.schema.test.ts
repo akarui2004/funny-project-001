@@ -23,3 +23,15 @@ describe('DATASOURCE_MASTER_SCHEMA', () => {
     });
   }
 });
+
+describe('DATASOURCE_MASTER_SCHEMA custom rules', () => {
+  it('for a dialect other than postgres, rejects it', () => {
+    assert.equal(DATASOURCE_MASTER_SCHEMA.safeParse(master({ dialect: 'mysql' })).success, false);
+  });
+
+  it('given a schema that is not a plain identifier, rejects it', () => {
+    const result = DATASOURCE_MASTER_SCHEMA.safeParse(master({ schema: 'fund -c x=1' }));
+    assert.equal(result.success, false);
+    assert.match(result.error!.issues[0]!.message, /schema must be a lowercase identifier/);
+  });
+});

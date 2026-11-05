@@ -145,7 +145,6 @@ function and test that instead.
 
 | Code | Reason | Unblock by |
 |------|--------|------------|
-| `buildSequelizeOptions` (`src/app/connections/database.ts`) | Importing the module constructs `appDb`, which loads and validates TOML config; it passes only when a local `config/<env>.local.toml` exists | Move the function into its own module |
 | `src/app/connections/*`, migrations | Need real PostgreSQL/Redis | Integration tests (none yet) |
 
 ## Checklist
@@ -155,6 +154,6 @@ function and test that instead.
 - [x] Pretty reporter (`tests/reporters/pretty-reporter.mts`)
 - [x] Tests for the files required by `docs/code-standards.md`
 - [x] `docs/agent-context.md` Verification section mentions `yarn test`
-- [ ] Testable `buildSequelizeOptions` (see section 5)
+- [x] Testable pool config mapping (`buildPgPoolConfig` in its own module)
 - [x] Tests for `ip-allow-list` / `ip-black-list`
 - [ ] Run `yarn test` in CI once a pipeline exists

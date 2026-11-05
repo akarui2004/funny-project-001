@@ -15,7 +15,7 @@
 │   ├── server.ts      # Entry point
 │   ├── app/           # Runtime wiring: config + connections
 │   ├── constants/     # Static values (defaults, environments, logging)
-│   ├── db/            # migrations, models, seeders, Sequelize CLI config
+│   ├── db/            # migrations, blueprint helpers, Kysely migration runner
 │   └── utils/         # Logger, project-root resolver
 └── tests/             # Empty, no test runner configured yet
 ```
@@ -39,21 +39,18 @@ flowchart TD
     utils --> constants
 
     subgraph db["src/db"]
-        cli["sequelize-cli-config.cjs"]
+        runner["migration-runner.ts"]
         blueprint["migration-blueprint.ts"]
         migrations["migrations/"]
-        models["models/ (empty)"]
-        seeders["seeders/ (empty)"]
     end
 
-    cli --> config
-    cli --> constants
-    cli --> conn
+    runner -. requires .-> migrations
     migrations --> blueprint
 
     subgraph scripts["scripts/ (dev only)"]
         base["base-cli.ts"]
         mig["db/migration-cli.ts"]
+        migrate["db/migrate-cli.ts"]
         helpers["db/helpers/*"]
         tpl["db/template/migration.mustache"]
     end
@@ -63,11 +60,9 @@ flowchart TD
     mig --> tpl
     tpl -. generates imports of .-> blueprint
     mig -. writes .-> migrations
-
-    rc[".sequelizerc"] --> cli
-    rc --> migrations
-    rc --> models
-    rc --> seeders
+    migrate --> base
+    migrate --> conn
+    migrate --> runner
 ```
 
 Note: `constants/defaults.ts` imports `src/utils/resolve-project-root` directly, not the

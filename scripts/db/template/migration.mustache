@@ -1,21 +1,19 @@
-import { QueryInterface } from 'sequelize';
+import type { Kysely } from 'kysely';
 import * as MigrationUtils from 'src/db/migration-blueprint';
 
-export default {
-  async up(queryInterface: QueryInterface): Promise<void> {
-    await queryInterface.createTable('{{table}}', {
-      id: MigrationUtils.primaryKey(),
-      {{#migrationColumns}}
-      {{{.}}},
-      {{/migrationColumns}}
-      {{#softDelete}}
-      ...MigrationUtils.softDeleteColumns,
-      {{/softDelete}}
-      ...MigrationUtils.timestampColumns
-    });
-  },
+export async function up(db: Kysely<any>): Promise<void> {
+  await MigrationUtils.addColumns(db.schema.createTable('{{table}}'), {
+    id: MigrationUtils.primaryKey(),
+    {{#migrationColumns}}
+    {{{.}}},
+    {{/migrationColumns}}
+    {{#softDelete}}
+    ...MigrationUtils.softDeleteColumns,
+    {{/softDelete}}
+    ...MigrationUtils.timestampColumns,
+  }).execute();
+}
 
-  async down(queryInterface: QueryInterface): Promise<void> {
-    await queryInterface.dropTable('{{table}}');
-  },
-};
+export async function down(db: Kysely<any>): Promise<void> {
+  await db.schema.dropTable('{{table}}').execute();
+}

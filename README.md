@@ -28,40 +28,15 @@ Data Layer Mood Swings:
 └── Redis ⚡ (for that sweet sweet caching dopamine)
 ```
 
-#### ORM
-We utilize `Sequelize` for object-relational mapping. For the `migration/seeder/model`, we are using the `sequelize-cli` for these:
+#### Database access
+We use [Kysely](https://kysely.dev) (typed SQL query builder over `pg`) and its `Migrator`:
 ```
-Sequelize CLI [Node: 10.21.0, CLI: 6.0.0, ORM: 6.1.0]
-
-sequelize <command>
-
-Commands:
-  sequelize db:migrate                        Run pending migrations
-  sequelize db:migrate:schema:timestamps:add  Update migration table to have timestamps
-  sequelize db:migrate:status                 List the status of all migrations
-  sequelize db:migrate:undo                   Reverts a migration
-  sequelize db:migrate:undo:all               Revert all migrations ran
-  sequelize db:seed                           Run specified seeder
-  sequelize db:seed:undo                      Deletes data from the database
-  sequelize db:seed:all                       Run every seeder
-  sequelize db:seed:undo:all                  Deletes data from the database
-  sequelize db:create                         Create database specified by configuration
-  sequelize db:drop                           Drop database specified by configuration
-  sequelize init                              Initializes project
-  sequelize init:config                       Initializes configuration
-  sequelize init:migrations                   Initializes migrations
-  sequelize init:models                       Initializes models
-  sequelize init:seeders                      Initializes seeders
-  sequelize migration:generate                Generates a new migration file      [aliases: migration:create]
-  sequelize model:generate                    Generates a model and its migration [aliases: model:create]
-  sequelize seed:generate                     Generates a new seed file           [aliases: seed:create]
-
-Options:
-  --version  Show version number                                                  [boolean]
-  --help     Show help                                                            [boolean]
-
-Please specify a command
+yarn db:migrate                          Apply all pending migrations
+yarn db:migrate:undo [--source <name>]   Undo the last migration of one source (default: platform)
+yarn db:migrate:status                   List executed / pending migrations
+yarn db:migration:create <table> -c ...  Scaffold a create-table migration
 ```
+See [docs/database/kysely-and-migrations.md](docs/database/kysely-and-migrations.md).
 
 ## Contributing
 Pull requests welcome if you're in the mood too! Fork away 🎊.
@@ -74,8 +49,7 @@ Before touching any code, **read the docs in this order**. Each doc builds on th
 |---|-----|-------------------|
 | 1 | [docs/setup/configuration.md](docs/setup/configuration.md) | Master reference for the layered TOML config system (`base.toml` → `<env>.toml` → `<env>.local.toml`). Covers the full schema: `env`, `datasource`, `redis`. **Read this first** — every other doc assumes you understand the layered override order. |
 | 2 | [docs/setup/environment-configuration.md](docs/setup/environment-configuration.md) | Explains how `NODE_ENV` and `.env` files are loaded via `dotenv`. Tells you which env vars exist and how to set them locally. |
-| 3 | [docs/database/database-config-loader.md](docs/database/database-config-loader.md) | Deep-dive on `src/db/sequelize-cli-config.cjs`, the file Sequelize CLI loads through `.sequelizerc`. Explains how it reuses the runtime config loader, why it is `.cjs`, and its failure modes. |
-| 4 | [docs/database/sequelize-and-sequelize-cli-relationship.md](docs/database/sequelize-and-sequelize-cli-relationship.md) | The big-picture diagram showing how `sequelize-cli` (dev-time) and the `sequelize` library (run-time) share the same `config/`, `models/`, and `migrations/` folders. Read this to understand *where* a change belongs. |
+| 3 | [docs/database/kysely-and-migrations.md](docs/database/kysely-and-migrations.md) | How `appDb` builds a Kysely + `pg` pool from the TOML datasource, how the migration CLI reuses it, migration sources, file format, blueprint helpers, and troubleshooting. |
 
 ### Quick mental model
 
@@ -91,19 +65,13 @@ Before touching any code, **read the docs in this order**. Each doc builds on th
 └──────────────────────┬──────────────────────────────────┘
                        ▼
 ┌─────────────────────────────────────────────────────────┐
-│  docs/database/database-config-loader.md                         │
-│  → how src/db/sequelize-cli-config.cjs reuses the app   │
-│    config to build the Sequelize CLI config object      │
-└──────────────────────┬──────────────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────────────┐
-│  docs/database/sequelize-and-sequelize-cli-relationship.md       │
-│  → how CLI (dev) and sequelize lib (runtime) share      │
-│    config/, models/, migrations/, seeders/              │
+│  docs/database/kysely-and-migrations.md                 │
+│  → how appDb (runtime) and the migrate CLI share one    │
+│    Kysely connection, migrations, blueprint helpers     │
 └─────────────────────────────────────────────────────────┘
 ```
 
-> 💡 **TL;DR** — config docs explain *what* the system does; the relationship diagram explains *why* everything lives where it does. Read in order, then dig into code.
+> 💡 **TL;DR** — config docs explain *what* the system does; the database doc explains how data access and migrations fit on top. Read in order, then dig into code.
 
 ## License
 MIT License—use freely, just don't blame me if it's half-baked [web:2].
