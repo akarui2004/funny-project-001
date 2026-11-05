@@ -61,8 +61,8 @@ order across sources does not matter because cross-module foreign keys are banne
 `MIGRATION_SOURCES`.
 
 Migrations are loaded with `require()` (`RequireMigrationProvider`), not Kysely's
-`FileMigrationProvider`: its native `import()` bypasses ts-node + tsconfig-paths, so `src/*` imports
-inside migrations would fail. Consequence: run migrations from source through `yarn script` (the
+`FileMigrationProvider`, so migrations go through the same CommonJS loader as the rest of the app
+(tsx with `scripts/tsconfig.json` paths from source, plain node on `dist/`) and `src/*` imports resolve. Consequence: run migrations from source through `yarn script` (the
 `db:*` scripts do), or from `dist/` after `yarn build`.
 
 ## Migration File Format
