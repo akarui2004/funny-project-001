@@ -9,8 +9,6 @@
 
     "strict": true,
     "noUncheckedIndexedAccess": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
@@ -18,9 +16,9 @@
     "sourceMap": true,
     // "allowImportingTsExtensions": true,
 
-    "baseUrl": "./",
+    "types": ["node"],
     "paths": {
-      "src/*": ["src/*"]
+      "src/*": ["./src/*"]
     }
   },
   "include": ["src/**/*", "config/**/*"],
@@ -29,8 +27,5 @@
     "dist",
     "**/*.test.ts",
     "**/*.spec.ts"
-  ],
-  "ts-node": {
-    "require": ["tsconfig-paths/register"]
-  }
+  ]
 }

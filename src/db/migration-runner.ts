@@ -15,8 +15,8 @@ export const PLATFORM_MIGRATION_SOURCE: MigrationSource = { name: 'platform', fo
 export const MIGRATION_SOURCES: MigrationSource[] = [PLATFORM_MIGRATION_SOURCE];
 
 /**
- * Loads migrations with require() instead of Kysely's FileMigrationProvider: its native import() bypasses
- * ts-node + tsconfig-paths, so `src/*` imports inside a migration would not resolve.
+ * Loads migrations with require() instead of Kysely's FileMigrationProvider, so they go through the same
+ * CommonJS loader as the rest of the app (tsx in `yarn script`, plain node on dist) and `src/*` imports resolve.
  * Migration name = file name without extension, identical for `.ts` (yarn script) and compiled `.js` (dist).
  */
 export class RequireMigrationProvider implements MigrationProvider {
