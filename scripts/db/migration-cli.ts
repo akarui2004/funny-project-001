@@ -2,69 +2,52 @@ import ansis from 'ansis';
 import { Command } from 'commander';
 import { format } from 'date-fns';
 import fs from 'fs';
-import Mustache from 'mustache';
 import path from 'path';
-import { plural } from 'pluralize';
 import { BaseCli } from 'scripts/base-cli';
-import { MigrationColumnParser } from './helpers/migration-column-parser';
-import { MigrationColumnRenderer } from './helpers/migration-column-renderer';
 
 interface MigrationOptions {
-  columns?: string;
-  softDelete?: boolean;
+  module?: string;
 }
 
-interface MustacheParam {
-  table: string;
-  softDelete: boolean | undefined;
-  migrationColumns: string[];
+const STUB = `import type { Kysely } from 'kysely';
+
+// Kysely<any>: migrations run against whatever schema exists at this point in history.
+// Column conventions (primaryKey, timestamps, softDelete, oneOf, nonNegative): src/db/migration-blueprint.ts
+export async function up(db: Kysely<any>): Promise<void> {
 }
 
+export async function down(db: Kysely<any>): Promise<void> {
+}
+`;
+
+/** Creates an empty timestamped migration; the body is written by hand with Kysely + src/db/migration-blueprint.ts. */
 class MigrationCli extends BaseCli {
   protected name: string = 'create';
-  protected description: string = 'Perform a migration operation to act with migration file';
+  protected description: string = 'Create an empty migration file';
 
   protected addArguments(command: Command): void {
-    command.argument('<table-name>', 'The table name');
+    command.argument('<name>', 'Kebab-case description, e.g. create-wallets or add-status-to-users');
   }
 
   protected addOptions(command: Command): void {
-    command.option('-c, --columns <columns>', 'Column definitions (e.g., column_1:string,column_2:integer:index)')
-      .option('--nsd, --no-soft-delete', 'Disable soft delete');
+    command.option('-m, --module <module>', 'Write into src/modules/<module>/migrations instead of src/db/migrations');
   }
 
-  public async execute(tableName: string, options: MigrationOptions): Promise<void> {
-    console.log(ansis.blueBright.bold(`Creating migration for table: ${tableName}`));
+  public execute(name: string, options: MigrationOptions): void {
+    if (!/^[a-z][a-z0-9]*(-[a-z0-9]+)*$/.test(name)) throw new Error(`Migration name "${name}" must be kebab-case`);
 
-    const pluralTableName = plural(tableName.toLowerCase());
+    const folder = options.module ? this.moduleFolder(options.module) : path.resolve('src/db/migrations');
+    const filePath = path.join(folder, `${format(new Date(), 'yyyyMMddHHmmss')}-${name}.ts`);
 
-    const parsedColumns = MigrationColumnParser.execute(options.columns ?? '');
-    const columnsStatement = MigrationColumnRenderer.execute(parsedColumns);
-
-    const params: MustacheParam = {
-      table: pluralTableName,
-      softDelete: options.softDelete,
-      migrationColumns: columnsStatement,
-    }
-    const renderTemplate = Mustache.render(this.getMigrationTemplateContent(), params);
-
-    const timestamp = format(new Date(), 'yyyyMMddHHmmss');
-    const migrationFileName = `${timestamp}-create-${pluralTableName}.ts`;
-
-    const exposeMigrationPath = path.resolve(`src/db/migrations/${migrationFileName}`);
-    fs.mkdirSync(path.dirname(exposeMigrationPath), { recursive: true });
-    fs.writeFileSync(exposeMigrationPath, renderTemplate, 'utf-8');
-
-    console.log(ansis.greenBright.bold(`Migration created successfully: ${exposeMigrationPath}`));
+    fs.mkdirSync(folder, { recursive: true });
+    fs.writeFileSync(filePath, STUB, { encoding: 'utf-8', flag: 'wx' });
+    console.log(ansis.greenBright.bold(`Migration created: ${filePath}`));
   }
 
-  private getMigrationTemplateContent() {
-    const filePath = path.resolve(__dirname, 'template', 'migration.mustache');
-    try {
-      return fs.readFileSync(filePath, 'utf-8');
-    } catch (error: any) {
-      throw new Error(`Cannot read migration template at ${filePath}`, { cause: error });
-    }
+  private moduleFolder(module: string): string {
+    const moduleRoot = path.resolve('src/modules', module);
+    if (!/^[a-z][a-z0-9-]*$/.test(module) || !fs.existsSync(moduleRoot)) throw new Error(`Unknown module "${module}"`);
+    return path.join(moduleRoot, 'migrations');
   }
 }
 

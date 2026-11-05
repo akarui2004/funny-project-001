@@ -39,7 +39,7 @@ for implementation details.
   `require()`-based provider) and `scripts/db/migrate-cli.ts` (`yarn db:migrate*`).
   See [`docs/database/kysely-and-migrations.md`](database/kysely-and-migrations.md)
 - Database migrations: `src/db/migrations/`
-- Shared migration column helpers: `src/db/migration-blueprint.ts`
+- Migration column conventions (`primaryKey`, `timestamps`, `softDelete`, `oneOf`, `nonNegative`): `src/db/migration-blueprint.ts`
 - Directory layout and module dependency diagram: [`docs/architecture/project-structure.md`](architecture/project-structure.md)
 - System, file, request, auth and data-model diagrams: [`docs/architecture/system-diagrams.md`](architecture/system-diagrams.md)
 - Project root resolver (`.app_root` marker): `src/utils/resolve-project-root.ts`;
@@ -80,7 +80,7 @@ passed based on the build.
 
 - `src/server.ts` currently exposes no HTTP routes.
 - Startup requires reachable PostgreSQL and both Redis instances.
-- Migrations are scaffolded by `scripts/db/migration-cli.ts` (`yarn db:migration:create`).
+- `yarn db:migration:create <name> [--module <m>]` (`scripts/db/migration-cli.ts`) only creates an empty timestamped file; write the body by hand with Kysely.
 - No seeders exist yet; there are no models (Kysely rows are plain objects).
 - `kysely` 0.29 is ESM-only; the CommonJS build loads it through Node's
   `require(esm)` (Node >= 22.12, see `.nvmrc`), and `tsconfig.json` uses

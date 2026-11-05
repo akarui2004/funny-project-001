@@ -37,7 +37,7 @@ New rules for `code-standards.md` "Database And Migrations":
   ```
   `index.ts` exports `<module>MigrationSource` instead of `init<Module>Models`. Registry `src/modules/index.ts` exports `MODULE_MIGRATION_SOURCES`; `migrate-cli` runs `[PLATFORM_MIGRATION_SOURCE, ...MODULE_MIGRATION_SOURCES]`. Remove `initAllModels` wiring in `server.ts`
 - Boundary test: no new rule needed. Using another module's tables requires importing its `*.tables.ts`, which rule 1 already blocks; mention this in the phase text
-- `--module <m>` in migration CLI: writes to `src/modules/<m>/migrations/` (not a file-name prefix); unknown module -> error
+- `--module <m>` in migration CLI: writes to `src/modules/<m>/migrations/` (not a file-name prefix); unknown module -> error (done 2026-11-05)
 ### `260930-2128-project-hardening-roadmap`
 - Phase 2 (biggest change), translate Sequelize concepts:
   | Sequelize plan item | Kysely equivalent |

@@ -65,13 +65,13 @@ Failure message lists `file -> import`. Include a fixture-free self-check: the s
 ## Todo
 - [ ] registry + server wiring
 - [ ] boundary test
-- [ ] migration CLI `--module`
+- [x] migration CLI `--module` (done 2026-11-05, CLI now creates empty files only)
 - [ ] docs
 
 ## Validation
 - `yarn build`, `yarn test` green
 - Temporarily add `import x from 'src/modules/a/a.service'` inside a scratch `src/modules/b/` file: test fails naming the line; remove
-- `yarn db:migration:create products --module product` -> `src/modules/product/migrations/<ts>-create-products.ts`; `yarn db:migrate` creates `product_migration`
+- `yarn db:migration:create create-products --module product` -> `src/modules/product/migrations/<ts>-create-products.ts`; `yarn db:migrate` creates `product_migration`
 
 ## Risks
 - Regex import scan misses exotic forms (`require` with variables); acceptable, codebase uses static ESM imports

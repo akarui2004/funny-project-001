@@ -25,7 +25,7 @@ Facts checked 2026-11-05: `kysely` latest `0.29.8`; `pg@^8.20.0` + `pg-pool@3.14
 - `appDb.getDb<DB>()` returns `Kysely<DB>` over one `pg.Pool` per connection type; same config contract (TOML `datasource.master`)
 - `yarn db:migrate` / `db:migrate:undo` / `db:migrate:status` run through Kysely `Migrator`, migration source list ready for per-module folders
 - Existing dev DB (already has `users` from Sequelize) and a fresh DB end with **identical schema** (`pg_dump --schema-only` diff empty, except migration bookkeeping tables)
-- `yarn db:migration:create` generates Kysely migrations; existing renderer/parser tests still green
+- `yarn db:migration:create <name> [--module <m>]` creates an empty Kysely migration (2026-11-05: column scaffold, parser/renderer, mustache template removed; Kysely builder is concise enough, blueprint reduced to conventions `primaryKey`/`timestamps`/`softDelete`/`oneOf`/`nonNegative`)
 - `yarn build`, `yarn test`, `yarn test:types` green; new unit tests for pool config mapping and blueprint SQL
 - Docs and dependent plans (modular plan, roadmap phases 2-4) updated to Kysely terms
 

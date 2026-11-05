@@ -39,7 +39,6 @@ tests/
 ├── helpers/                        # match-ip-rules, ip-helper/ (parsers, version-detector)
 ├── http/errors/                    # http-error
 ├── http/middlewares/               # error-handler, validate-request
-├── scripts/db/helpers/             # migration-column-parser / -renderer
 └── utils/                          # get-error-message, resolve-project-root
 ```
 
@@ -80,7 +79,7 @@ describe('getIPVersion', () => {
 ```
 
 See also `tests/app/config-loader/schema/redis.schema.test.ts` (accept/reject
-table) and `tests/scripts/db/helpers/migration-column-renderer.test.ts`.
+table) and `tests/db/migration-blueprint.test.ts` (pins emitted DDL).
 
 ### 3.2 Express middleware with a fake `req` / `res` / `next`
 
