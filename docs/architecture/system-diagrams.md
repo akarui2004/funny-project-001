@@ -24,7 +24,7 @@ HTTP layer = phase 1, modules and tables = phase 2.
 
 ## 2. File flow
 
-Runtime and the Sequelize CLI share one config loader, so both connect with the same settings.
+Runtime and the migration CLI share `appDb` (one config loader), so both connect with the same settings.
 
 ![File flow](diagrams/02-file-flow.png)
 

@@ -3,8 +3,8 @@
 ## Context
 - Decisions: UUID v4 ids (PostgreSQL >= 16, `gen_random_uuid()` built in). Shared schema with `tenantId`. Tenant = ops. Identity model from anh's schema: `tenants`, `operators`, `users`, `credentials` (polymorphic `targetId`/`targetType`), plus a separate `managers` table.
 - Surfaces map to people: `manager` -> Manager, `ops` -> Operator, `api` -> User.
-- `src/db/models/`, `src/db/seeders/` empty (`.sequelizerc` points at both).
-- `primaryKey()` in `src/db/migration-blueprint.ts` has UUID type but **no default**; `uuid()` ignores its `unique` param. The `create-user` migration is applied and immutable.
+- DB access is Kysely (see `docs/database/kysely-and-migrations.md`): no models, rows are plain objects, tables typed by hand, migrations via `yarn db:migrate` (Kysely `Migrator`). No seeders exist.
+- `primaryKey()` in `src/db/migration-blueprint.ts` already defaults to `gen_random_uuid()` and `uuid()` honours `unique` (fixed in the Kysely migration). The applied `create-user` migration hand-codes the old `users.id` **without** a default.
 - Existing `users` table: `id, username, password, role, deletedAt, createdAt, updatedAt`. New `users` shape differs; migration guards against existing rows (see Steps).
 - `seeder:create` script was removed; seeders have no run tracking by default.
 
@@ -38,8 +38,8 @@ Additions to anh's schema (flag if unwanted): `deletedAt` on `operators`, `users
 | `totp` | deferred | deferred (needs reversible encryption of the seed) |
 
 ## Requirements
-- Base model + `Tenant`, `Manager`, `Operator`, `User`, `Credential`; soft delete; camelCase columns (no `underscored`)
-- `TenantScopedModel` base (`tenantId` + `forTenant(tenantId)` scope) for `Operator`, `User`; `Credential.forTenant` likewise. Every tenant-owned query takes `tenantId` from `req.auth`, never from body/params/query
+- Kysely table interfaces for `tenants`, `managers`, `operators`, `users`, `credentials` (`Generated<>` for defaults); repositories per table; soft delete; camelCase columns
+- Repository helpers `whereTenant(qb, tenantId)` and `whereNotDeleted(qb)` used by every tenant-owned / soft-delete read of `operators`, `users`, `credentials`. Every tenant-owned query takes `tenantId` from `req.auth`, never from body/params/query
 - Login on the three surfaces returns `{ accessToken, refreshToken, expiresIn }`; refresh rotates the pair
 - Credential types in this phase: `password`, `key-based`. `totp` exists in the enum only, flow deferred
 - Seeder CLI, manager bootstrap CLI
@@ -57,7 +57,7 @@ Refresh re-checks tenant active, credential active, target not deleted.
 ## Endpoints
 | Surface | Endpoint | Rule |
 |---------|----------|------|
-| manager | `POST /manager/v1/tenants` `{name,slug,operator:{name,accessKey,password}}` | one transaction: tenant + first operator + its `password` credential; 409 on duplicate slug |
+| manager | `POST /manager/v1/tenants` `{name,slug,operator:{name,accessKey,password}}` | one transaction (`db.transaction().execute(trx => ...)`): tenant + first operator + its `password` credential; 409 on duplicate slug |
 | manager | `GET /tenants`, `GET /tenants/:id`, `PATCH /tenants/:id` (name) | paginated, `limit` max 100 |
 | manager | `POST /tenants/:id/suspend` \| `/activate` | suspend = status + denylist `tenant-suspended:<tid>` + delete its refresh tokens |
 | ops | `POST /ops/v1/users` `{name,address,phone,birthDate?,bio?,credential:{accessKey,password}}` | user + password credential in one transaction, scoped to `req.auth.tenantId` |
@@ -75,7 +75,8 @@ Phase 1 change implied here: `authenticate` denylist checks `revoked-jti:<jti>`,
 
 ## Files
 ```text
-src/db/models/{base-model,tenant-scoped-model,tenant,manager,operator,user,credential}.ts, index.ts
+src/db/repository-helpers.ts            # whereTenant(), whereNotDeleted()
+<module>.tables.ts + repositories      # table interfaces + queries (paths per modular plan phase 2)
 src/db/migrations/<ts>-add-uuid-default-to-users-id.ts
 src/db/migrations/<ts>-create-common-status-and-credential-types.ts
 src/db/migrations/<ts>-create-tenants.ts
@@ -83,7 +84,6 @@ src/db/migrations/<ts>-create-managers.ts
 src/db/migrations/<ts>-create-operators.ts
 src/db/migrations/<ts>-rework-users-for-tenants.ts
 src/db/migrations/<ts>-create-credentials.ts
-src/db/migration-blueprint.ts          # uuidPrimaryKey(); fix uuid() unique
 src/utils/password-hasher.ts           # scrypt hash/verify
 src/utils/api-key-generator.ts         # generate ak_/sk_ pair, hash secret, compare
 src/modules/auth/{auth.service.ts,auth.schema.ts}
@@ -94,40 +94,37 @@ src/modules/credential/{credential.service.ts,credential.schema.ts}
 src/http/surfaces/manager/{auth,tenant}.route.ts
 src/http/surfaces/ops/{auth,user,operator,credential}.route.ts
 src/http/surfaces/api/{auth,me}.route.ts
-scripts/db/seeder-cli.ts + template/seeder.mustache
+seeders as migration source `seed` (`seed_migration` table) or plain script; decide at step 11
 scripts/db/create-manager-cli.ts       # yarn db:manager:create --name x --access-key y --password-stdin
-src/app/connections/database.ts        # initModels after authenticate
 package.json                           # db:seeder:create, db:manager:create
 ```
-Do not change old `primaryKey()` behavior (fresh runs of applied migrations would drift). New tables use `uuidPrimaryKey()` with `defaultValue: Sequelize.literal('gen_random_uuid()')`; models also set `DataTypes.UUIDV4`.
+New tables use blueprint `primaryKey()` (already `default gen_random_uuid()`); repositories never set `id` on insert. The old `users.id` still needs its own migration for the default.
 
 ## Steps
 1. **Back up DB** (`pg_dump`), then `SELECT count(*) FROM users`
-2. Blueprint: `uuidPrimaryKey()`, fix `uuid()`
 3. Migration: `users.id` default `gen_random_uuid()`
-4. Migration: `CREATE TYPE common_status`, `credential_types` (`down` drops them)
-5. Migrations: `tenants`, `managers`, `operators` (partial unique / indexes via raw SQL, `down` reverses)
-6. Migration `rework-users-for-tenants`, one transaction: **abort with a clear message if `users` has rows** (old `password` format is unknown, cannot be migrated safely; anh decides what to do with dev data); otherwise drop `username`, `password`, `role`, add `tenantId` FK, `name`, `address`, `phone`, `birthDate`, `bio`. `down` restores the old columns (nullable) and drops the new ones
+4. Migration: `CREATE TYPE common_status`, `credential_types` via `sql` (`down` drops them with `db.schema.dropType`)
+5. Migrations: `tenants`, `managers`, `operators` (partial unique via `db.schema.createIndex(...).unique().where(...)` or `sql`, `down` reverses)
+6. Migration `rework-users-for-tenants` (Kysely runs pending migrations in one transaction on PG): **abort with a clear message if `users` has rows** (old `password` format is unknown, cannot be migrated safely; anh decides what to do with dev data); otherwise drop `username`, `password`, `role`, add `tenantId` FK, `name`, `address`, `phone`, `birthDate`, `bio`. `down` restores the old columns (nullable) and drops the new ones
 7. Migration `credentials` with all constraints above
-8. Models and `initModels` registration
+8. Table interfaces, repositories, `repository-helpers.ts` (+ unit tests compiling SQL with `DummyDriver`)
 9. `password-hasher.ts`, `api-key-generator.ts`
 10. Modules and routes per table above, wired to phase 1 guards
-11. Seeder CLI (ids via `randomUUID()` from `node:crypto`, `seederStorage: 'sequelize'` in `sequelize-cli-config.cjs`, verify option name against installed sequelize-cli) and `db:manager:create` (password from stdin, never argv)
+11. Seeders (ids via `randomUUID()` from `node:crypto`): either a `seed` migration source (run-once tracking in `seed_migration`) or an idempotent script; and `db:manager:create` (password from stdin, never argv)
 12. Docs: `code-standards.md` (tenant scoping + polymorphic rule), `agent-context.md`, `project-structure.md`, `configuration.md`; retire `docs/todos.md` items
 
 ## Security rules
 - Same 401 for unknown tenant, unknown accessKey, wrong secret, suspended tenant/credential; dummy hash verify on miss
 - Stricter login rate limit (e.g. 10/min keyed by IP + tenantSlug + accessKey)
 - Cross-tenant id -> **404**, not 403
-- `secret` never in any response or log, except the one-time key-based secret at creation. `Credential` `defaultScope` excludes `secret`; `scope('withSecret')` only inside `auth.service`
+- `secret` never in any response or log, except the one-time key-based secret at creation. Reads use a `CREDENTIAL_PUBLIC_COLUMNS` select list (no `selectAll()` on `credentials`); only the auth repository selects `secret`
 - Password min length 10; key-based secrets generated by the server only
 - Suspending a tenant or credential, deleting a person: denylist + delete refresh tokens at once
 
 ## Todo
 - [ ] backup + row count
-- [ ] blueprint helper + fix
 - [ ] enums + 5 table migrations + users rework
-- [ ] models + tenant scoping base
+- [ ] table types, repositories + tenant scoping helpers
 - [ ] password hasher + api key generator
 - [ ] auth module + 3 login routes + refresh/logout
 - [ ] tenant, user, operator, credential modules and routes
@@ -147,11 +144,11 @@ Do not change old `primaryKey()` behavior (fresh runs of applied migrations woul
 - Same `accessKey` in two tenants OK; same `accessKey` (different case), same tenant -> 409
 - Deleting a user leaves no active credential for it
 - No response or log line contains a secret or hash
-- `yarn db:seed:all` twice: second run inserts nothing
+- Running the seed step twice: second run inserts nothing
 
 ## Risks
 - Polymorphic link has no FK (anh's choice): orphans possible if code bypasses the service. Mitigation above; all deletes are soft and transactional
-- Any tenant-owned query missing `forTenant` leaks across tenants. Mitigation: access only via services requiring `tenantId`; cross-tenant tests in phase 4; later hardening: Postgres row-level security
+- Any tenant-owned query missing `whereTenant` leaks across tenants. Mitigation: access only via services requiring `tenantId`; cross-tenant tests in phase 4; later hardening: Postgres row-level security
 - `users.address`/`phone` NOT NULL forces ops to collect them at creation
 - Applied migrations are immutable; fixes only via new migrations
 - Enum values cannot be removed once added; add new `credential_types` values with `ALTER TYPE ... ADD VALUE` in their own migration

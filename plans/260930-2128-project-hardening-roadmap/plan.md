@@ -36,7 +36,7 @@ Priority of phase 4 was not stated; placed after docs. Move it earlier if anh wa
 - `GET /health` and `/ready` work; errors return JSON, never raw DB/Redis text
 - Login works on all three surfaces; a token only works on its own surface; revoke and tenant suspend kill sessions immediately
 - A tenant can never read or write another tenant's data (cross-tenant id -> 404); ids are UUID v4; password never returned, stored hashed
-- Seeder and model creatable via CLI; migrations and models aligned
+- Seeders runnable via CLI; migrations and table types aligned
 - README and docs match reality
 
 ## Unresolved questions

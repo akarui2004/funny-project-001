@@ -40,7 +40,6 @@ port = 3000
       idle = 10000
     [datasource.master.option]
       ssl = false
-      connectionTimeout = 60000
 
 [redis]
   [redis.master]

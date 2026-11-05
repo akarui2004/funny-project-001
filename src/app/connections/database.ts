@@ -1,39 +1,17 @@
-import { Dialect, Sequelize, Options as SequelizeOptions } from 'sequelize';
+import { Kysely, PostgresDialect, sql } from 'kysely';
+import { Pool } from 'pg';
 import appConfig from 'src/app/config-loader';
+import { getErrorMessage } from 'src/utils/get-error-message';
 import { createModuleLogger } from 'src/utils/logger';
-import { TDatasourceSchema, TMasterDatasourceSchema } from '../config-loader/config.type';
+import { TDatasourceSchema } from '../config-loader/config.type';
+import { buildPgPoolConfig } from './build-pg-pool-config';
 
 const log = createModuleLogger('db');
 
-/**
- * Maps a TOML datasource entry to Sequelize options.
- * Shared by the runtime connection and the Sequelize CLI config (src/db/sequelize-cli-config.cjs),
- * so both connect with the same settings (pool, ssl, timeouts).
- */
-export const buildSequelizeOptions = (datasource: TMasterDatasourceSchema): SequelizeOptions => {
-  const {
-    dialect, host, port,
-    schema, database,
-    username, password,
-    pool: poolOptions, option: otherOptions
-  } = datasource;
-  const { min, max, idle, acquireTimeout: acquire } = poolOptions;
-  const { ssl, connectionTimeout: connectTimeout } = otherOptions;
-  return {
-    dialect: dialect as Dialect,
-    host, port,
-    schema, database,
-    username, password,
-    pool: { min, max, acquire, idle },
-    dialectOptions: { ssl, connectTimeout },
-    // Route SQL through winston instead of Sequelize's default console.log; visible with LOG_LEVEL=debug
-    logging: (sql: string) => log.debug(sql),
-  };
-};
-
 class DatabaseManager {
   private dbConfig: TDatasourceSchema;
-  private dbClients: Partial<Record<keyof TDatasourceSchema, Sequelize>> = {};
+  // Untyped internally; callers pick the table types they may see through getDb<DB>()
+  private dbClients: Partial<Record<keyof TDatasourceSchema, Kysely<any>>> = {};
 
   public constructor() {
     this.dbConfig = appConfig.datasource;
@@ -45,17 +23,30 @@ class DatabaseManager {
       return;
     }
 
-    try {
-      const sequelize = new Sequelize(buildSequelizeOptions(this.dbConfig[connType]));
-      await sequelize.authenticate();
+    const db = new Kysely<any>({
+      dialect: new PostgresDialect({ pool: new Pool(buildPgPoolConfig(this.dbConfig[connType])) }),
+      // SQL goes through winston (visible with LOG_LEVEL=debug). Parameters are never logged: they carry passwords and secrets
+      log: (event) => {
+        if (event.level === 'query') {
+          log.debug(`${event.query.sql} (${event.queryDurationMillis.toFixed(1)}ms)`);
+        } else {
+          log.error(`${event.query.sql} failed: ${getErrorMessage(event.error)}`);
+        }
+      },
+    });
 
-      this.dbClients[connType] = sequelize;
-      log.info(`✅ [${connType}] Connection established`);
-    } catch (error: any) {
-      log.error(`❌ [${connType}] Unable to connect: ${error.message}`);
-      // Rethrow so the application boot process knows the DB failed to connect
+    try {
+      // pg Pool connects lazily, so a round-trip is the only way to prove the connection works at boot
+      await sql`select 1`.execute(db);
+    } catch (error) {
+      log.error(`❌ [${connType}] Unable to connect: ${getErrorMessage(error)}`);
+      // Do not leave a half-open pool behind; rethrow so the boot process knows the DB failed
+      await db.destroy();
       throw error;
     }
+
+    this.dbClients[connType] = db;
+    log.info(`✅ [${connType}] Connection established`);
   }
 
   /**
@@ -68,11 +59,11 @@ class DatabaseManager {
     }
 
     try {
-      await client.close();
+      await client.destroy();
       delete this.dbClients[connType];
       log.info(`🔌 [${connType}] Connection closed`);
-    } catch (error: any) {
-      log.error(`❌ [${connType}] Error disconnecting: ${error.message}`);
+    } catch (error) {
+      log.error(`❌ [${connType}] Error disconnecting: ${getErrorMessage(error)}`);
       throw error;
     }
   }
@@ -88,14 +79,17 @@ class DatabaseManager {
     }
   }
 
-  // Same contract as appRedis.getClient(): throw instead of returning null, so callers never null-check
-  public getDb(connType: keyof TDatasourceSchema = 'master'): Sequelize {
+  /**
+   * Same contract as appRedis.getClient(): throw instead of returning null, so callers never null-check.
+   * No default for DB on purpose: each caller states the tables it may touch (a module passes only its own).
+   */
+  public getDb<DB>(connType: keyof TDatasourceSchema = 'master'): Kysely<DB> {
     const client = this.dbClients[connType];
     if (!client) {
       throw new Error(`[DB] Connection '${String(connType)}' is not initialized. Call appDb.initialize() first.`);
     }
 
-    return client;
+    return client as Kysely<DB>;
   }
 }
 

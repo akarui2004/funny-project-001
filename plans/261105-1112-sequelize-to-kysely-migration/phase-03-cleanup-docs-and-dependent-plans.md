@@ -62,10 +62,10 @@ New rules for `code-standards.md` "Database And Migrations":
 5. Mark this plan `status: done`
 
 ## Todo
-- [ ] docs
-- [ ] modular plan updates
-- [ ] roadmap updates
-- [ ] grep + link check
+- [x] docs
+- [x] modular plan updates
+- [x] roadmap updates
+- [x] grep + link check
 
-## Follow-up (not this plan)
-- Migration `drop-sequelize-meta` (`dropTable('SequelizeMeta').ifExists()`) once Kysely ran on every environment
+## Follow-up
+- No `drop-sequelize-meta` migration: only local dev DBs have `SequelizeMeta` (anh's call); drop by hand if wanted

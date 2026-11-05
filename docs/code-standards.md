@@ -46,7 +46,7 @@ Conventions already used in the codebase; follow them for new code:
 | Interface / class | PascalCase, no `I` prefix | `ParsedField`, `MigrationColumnParser` |
 | Constant group object | `UPPER_SNAKE_CASE` | `DEFAULTS`, `LOGGING` |
 | Managed singleton | `app` + PascalCase noun | `appDb`, `appRedis`, `appConfig` |
-| Function | camelCase verb phrase, `export const` arrow | `buildSequelizeOptions`, `createModuleLogger` |
+| Function | camelCase verb phrase, `export const` arrow | `buildPgPoolConfig`, `createModuleLogger` |
 | Module logger tag | short lowercase name | `createModuleLogger('db')` |
 
 ## Formatting
@@ -67,9 +67,9 @@ Conventions already used in the codebase; follow them for new code:
 - Keep secrets in `.env` or ignored `config/<environment>.local.toml` files.
   Never place credentials in committed TOML, source, logs, or documentation.
 - Preserve the merge order `base -> environment -> environment.local`.
-- Sequelize CLI configuration lives in `src/db/sequelize-cli-config.cjs` and reuses
-  the runtime loader; change connection options in `buildSequelizeOptions`
-  (`src/app/connections/database.ts`) so the app and CLI stay in sync.
+- The migration CLI connects through `appDb`, like the app; change connection
+  options in `buildPgPoolConfig` (`src/app/connections/build-pg-pool-config.ts`)
+  so both stay in sync.
 
 ## Express And Startup
 
@@ -80,11 +80,11 @@ Conventions already used in the codebase; follow them for new code:
 - Use the project logger for operational messages. Do not introduce ad-hoc
   logging in new application code unless it is temporary diagnostics.
 - Add graceful shutdown handling when introducing long-lived resources or
-  background workers. Close Redis and Sequelize clients before process exit.
+  background workers. Close Redis clients and Kysely pools (`appDb.disconnectAll()`) before process exit.
 - Convert route and service errors into intentional HTTP responses. Do not
   expose raw database, Redis, or credential details to clients.
 
-## Sequelize And Migrations
+## Database And Migrations
 
 - Treat applied migrations as immutable. Create a new migration for schema
   changes and provide both `up` and `down` operations where rollback is safe.
@@ -93,10 +93,16 @@ Conventions already used in the codebase; follow them for new code:
 - Use UUID for every primary and foreign key. Never use auto-increment,
   serial, or bigint ids: they are guessable and allow enumeration.
 - Keep migration names timestamped and describe the schema change clearly.
-- Do not use `sync({ alter: true })` or `sync({ force: true })` as a substitute
-  for migrations.
-- Keep transaction boundaries explicit for multi-step data changes.
-- Keep models, migrations, and database configuration aligned.
+- Get the database as `appDb.getDb<Tables>()` with the caller's own table
+  interface. `Kysely<any>` is allowed only in migrations.
+- Return plain rows/DTOs. Select explicit columns from tables holding secrets
+  (no `selectAll()` there).
+- Every read on a soft-delete table filters `deletedAt is null`.
+- Multi-step writes use `db.transaction().execute(async (trx) => ...)`; pass
+  `trx` down and never mix `db` and `trx` inside one flow.
+- Raw SQL only through the `sql` tagged template (parameterized); never
+  concatenate values. `sql.raw` only for already-validated identifiers.
+- Set `updatedAt` on every update; the DB default covers inserts only.
 
 ## Redis
 
@@ -159,14 +165,14 @@ runs without network, database, or Redis. Mock nothing heavier than an Express
 | Security and access rules | A bug lets the wrong request through | `ip-allow-list.ts`, `ip-black-list.ts`, auth checks |
 | Error to HTTP response mapping | Response contract; must not leak internals on 5xx | `error-handler.ts`, `http-error.ts`, `validate-request.ts` |
 | Pure helpers with branches | Cheap to test, reused widely | `src/utils/get-error-message.ts` |
-| Mappings shared by two consumers | Drift breaks both sides | `buildSequelizeOptions`, `migration-column-renderer.ts` |
+| Mappings shared by two consumers | Drift breaks both sides | `buildPgPoolConfig`, `migration-column-renderer.ts` |
 | Custom Zod rules | Only rules beyond plain shape (`min`, `regex`, `refine`) | `http.schema.ts` limits |
 | Business logic in services | Core behavior; add as services are written | future `src/**/services/` |
 
 Skip unit tests for:
 
 - Composition and startup (`src/server.ts`), barrels (`index.ts`), `*.type.ts`,
-  constants, and declarative column helpers (`migration-blueprint.ts`).
+  and constants.
 - Connection managers (`src/app/connections/`) and migrations; they need real
   PostgreSQL/Redis and belong in integration tests.
 - Trivial one-liners and thin wrappers over a library (`logger.ts`,

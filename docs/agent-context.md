@@ -9,11 +9,12 @@ for implementation details.
 
 - Use Yarn commands because the repository includes `yarn.lock`.
 - Read `README.md` and the configuration docs before changing configuration,
-  Sequelize, migrations, or startup code.
+  database access (Kysely), migrations, or startup code.
 - Do not read, print, or commit `.env`; use `.env.example` for the documented
   environment-variable contract.
 - Do not edit an existing migration that may already have been applied. Add a
-  new migration in `src/db/migrations/` instead.
+  new migration in `src/db/migrations/` instead. (Single exception, already done:
+  `create-user` was ported from Sequelize to Kysely with an identical schema.)
 - Keep local secrets and machine-specific overrides in ignored files such as
   `.env` or `config/<environment>.local.toml`.
 - Preserve the `src/*` TypeScript path alias and run the build after source
@@ -31,10 +32,12 @@ for implementation details.
 - Runtime configuration: `src/app/config-loader/index.ts`
 - Configuration schemas: `src/app/config-loader/schema/`
 - Runtime database connections: `src/app/connections/database.ts`
-  (`appDb.getDb()` throws if not initialized, like `appRedis.getClient()`)
+  (Kysely over `pg`; `appDb.getDb<DB>()` throws if not initialized, like
+  `appRedis.getClient()`); TOML -> pool mapping in `build-pg-pool-config.ts`
 - Runtime Redis connections: `src/app/connections/redis.ts`
-- Sequelize CLI configuration: `.sequelizerc` and `src/db/sequelize-cli-config.cjs`
-  (reuses the runtime config loader and `buildSequelizeOptions`)
+- Migration runner and CLI: `src/db/migration-runner.ts` (migration sources,
+  `require()`-based provider) and `scripts/db/migrate-cli.ts` (`yarn db:migrate*`).
+  See [`docs/database/kysely-and-migrations.md`](database/kysely-and-migrations.md)
 - Database migrations: `src/db/migrations/`
 - Shared migration column helpers: `src/db/migration-blueprint.ts`
 - Directory layout and module dependency diagram: [`docs/architecture/project-structure.md`](architecture/project-structure.md)
@@ -54,9 +57,9 @@ config/base.toml -> config/<NODE_ENV>.toml -> config/<NODE_ENV>.local.toml
 ```
 
 The runtime loader validates `env`, `datasource.master`, `redis.master`, and
-`redis.queue` with Zod. The Sequelize CLI config reuses that loader and
-exports only `datasource.master`. See `docs/setup/configuration.md` and
-`docs/database/database-config-loader.md` for the full contract.
+`redis.queue` with Zod. The migration CLI reuses that loader through `appDb`
+and connects with `datasource.master`. See `docs/setup/configuration.md` and
+`docs/database/kysely-and-migrations.md` for the full contract.
 
 ## Verification
 
@@ -78,4 +81,7 @@ passed based on the build.
 - `src/server.ts` currently exposes no HTTP routes.
 - Startup requires reachable PostgreSQL and both Redis instances.
 - Migrations are scaffolded by `scripts/db/migration-cli.ts` (`yarn db:migration:create`).
-- `src/db/models/` and `src/db/seeders/` are empty placeholders.
+- No seeders exist yet; there are no models (Kysely rows are plain objects).
+- `kysely` 0.29 is ESM-only; the CommonJS build loads it through Node's
+  `require(esm)` (Node >= 22.12, see `.nvmrc`), and `tsconfig.json` uses
+  `module: node20` so TypeScript accepts it.

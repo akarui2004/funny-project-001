@@ -1,6 +1,6 @@
 ---
 title: Replace Sequelize with Kysely (query builder + migrator)
-status: proposed
+status: done
 created: 2026-11-05
 updated: 2026-11-05
 ---
@@ -47,9 +47,9 @@ Facts checked 2026-11-05: `kysely` latest `0.29.8`; `pg@^8.20.0` + `pg-pool@3.14
 ## Phases
 | # | Phase | Status | Depends on |
 |---|-------|--------|------------|
-| 1 | [Connection layer: Kysely + pg pool](phase-01-connection-layer.md) | proposed | none |
-| 2 | [Migrations: runner, CLI, blueprint, baseline](phase-02-migrations-runner-and-blueprint.md) | proposed | 1 |
-| 3 | [Cleanup, docs, dependent plans](phase-03-cleanup-docs-and-dependent-plans.md) | proposed | 2 |
+| 1 | [Connection layer: Kysely + pg pool](phase-01-connection-layer.md) | done | none |
+| 2 | [Migrations: runner, CLI, blueprint, baseline](phase-02-migrations-runner-and-blueprint.md) | done (validated on scratch PG; dev DB not run) | 1 |
+| 3 | [Cleanup, docs, dependent plans](phase-03-cleanup-docs-and-dependent-plans.md) | done | 2 |
 
 One PR off `main` for all three (small), or one PR per phase if anh prefers; phase 1 alone keeps the app bootable because the Sequelize CLI is still there until phase 2 removes it.
 

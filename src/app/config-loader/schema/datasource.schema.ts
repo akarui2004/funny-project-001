@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
+// pg has a single "get a client" timeout, configured by pool.acquireTimeout; a separate connect timeout no longer exists
 const DATASOURCE_MASTER_OPTIONS_SCHEMA = z.object({
   ssl: z.boolean(),
-  connectionTimeout: z.coerce.number().default(60000)
 });
 
 const DATASOURCE_MASTER_POOL_SCHEMA = z.object({
@@ -13,10 +13,12 @@ const DATASOURCE_MASTER_POOL_SCHEMA = z.object({
 });
 
 export const DATASOURCE_MASTER_SCHEMA = z.object({
-  dialect: z.string().default('postgres'),
+  // Only PostgreSQL is supported (Kysely PostgresDialect over pg)
+  dialect: z.literal('postgres').default('postgres'),
   host: z.string().default('localhost'),
   port: z.coerce.number().default(5432),
-  schema: z.string().optional().default('public'),
+  // Becomes `-c search_path=<schema>` in the pg startup packet, so allow plain identifiers only
+  schema: z.string().regex(/^[a-z_][a-z0-9_]*$/, 'schema must be a lowercase identifier').optional().default('public'),
   database: z.string().default('fund_project'),
   username: z.string().min(1, 'username is required (set it in <env>.toml or <env>.local.toml)'),
   password: z.string().min(1, 'password is required (set it in <env>.toml or <env>.local.toml)'),

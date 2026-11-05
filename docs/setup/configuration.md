@@ -56,10 +56,10 @@ Supports multiple named datasources. Each datasource has its own subsection (e.g
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `dialect` | string | — | The type of database being used (e.g., `postgres`). |
+| `dialect` | string | `"postgres"` | Database type. Only `postgres` is accepted. |
 | `host` | string | `"localhost"` | The host name or IP address of the database server. |
 | `port` | number | `5432` | The port number on which the database server is listening. |
-| `schema` | string | `"public"` | The database schema to be used. |
+| `schema` | string | `"public"` | The database schema (`search_path`). Lowercase identifier only (`^[a-z_][a-z0-9_]*$`). |
 | `username` | string | `""` | The username for authenticating with the database. |
 | `password` | string | `""` | The password for authentication with the database. |
 
@@ -71,7 +71,7 @@ Connection pool settings.
 |-----|------|---------|-------------|
 | `max` | number | `10` | The maximum number of connections in the connection pool. |
 | `min` | number | `0` | The minimum number of connections in the connection pool. |
-| `acquireTimeout` | number | `30000` | Max time (ms) to try to get a connection before throwing an error. |
+| `acquireTimeout` | number | `30000` | Max time (ms) to get a client from the pool, including opening a new connection (pg `connectionTimeoutMillis`). |
 | `idle` | number | `10000` | Max time (ms) that a connection can be idle before being released. |
 
 ### [datasource.\<name\>.option]
@@ -81,7 +81,6 @@ Additional connection options.
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `ssl` | boolean | `false` | Whether to use SSL for the database connection. |
-| `connectionTimeout` | number | `60000` | The maximum time (ms) to wait for a connection to be established before timing out. |
 
 ---
 
@@ -201,7 +200,6 @@ config/.*.local.toml
     idle = 10000
   [datasource.master.option]
     ssl = false
-    connectionTimeout = 60000
 
 [redis.master]
   host = "localhost"
@@ -238,7 +236,6 @@ config/.*.local.toml
   password = "${DB_PASSWORD}"
   [datasource.master.option]
     ssl = true
-    connectionTimeout = 30000
 
 [redis.master]
   host = "redis.production.internal"
