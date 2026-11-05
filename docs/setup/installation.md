@@ -1,6 +1,6 @@
 # Installation
 
-Backend for Funny Project 001: Node.js + Express 5 + TypeScript, PostgreSQL via Sequelize, Redis via ioredis.
+Backend for Funny Project 001: Node.js + Express 5 + TypeScript, PostgreSQL via Kysely (`pg`), Redis via ioredis.
 
 ## Prerequisites
 
@@ -58,11 +58,11 @@ src/
 ├── server.ts            bootstrap() / shutdown()
 ├── app/
 │   ├── config/          TOML loader + Zod schemas
-│   └── connections/     appDb (Sequelize), appRedis (ioredis)
+│   └── connections/     appDb (Kysely + pg pool), appRedis (ioredis)
 ├── db/
 │   ├── migrations/
 │   ├── migration-blueprint.ts   column helpers for migrations
-│   └── sequelize-cli-config.cjs Sequelize CLI config (via .sequelizerc)
+│   └── migration-runner.ts      Kysely Migrator + migration sources
 ├── constants/
 └── utils/logger.ts      winston logger, createModuleLogger()
 scripts/                 console (REPL) and DB script stubs
