@@ -129,9 +129,13 @@ Reproduce exactly what Sequelize created, idempotently:
 ```ts
 export async function up(db: Kysely<any>): Promise<void> {
   // Sequelize named enum types enum_<table>_<column>; keep the name so existing DBs match
-  await sql`DO $$ BEGIN
-    CREATE TYPE "enum_users_role" AS ENUM ('admin', 'sub-admin', 'member', 'guest');
-  EXCEPTION WHEN duplicate_object THEN NULL; END $$`.execute(db);
+  // Postgres has no CREATE TYPE IF NOT EXISTS; to_regtype resolves via search_path and is NULL when absent
+  const { rows } = await sql<{ type: string | null }>`SELECT to_regtype('enum_users_role') AS type`.execute(db);
+  if (!rows[0]?.type) {
+    await db.schema.createType('enum_users_role')
+      .asEnum(['admin', 'sub-admin', 'member', 'guest'])
+      .execute();
+  }
 
   await db.schema.createTable('users').ifNotExists()
     .addColumn('id', 'uuid', (c) => c.primaryKey().notNull())          // no default: original had none

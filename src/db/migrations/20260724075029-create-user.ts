@@ -2,13 +2,17 @@ import { sql } from 'kysely';
 import type { Kysely } from 'kysely';
 
 // Must stay schema-identical to the table Sequelize created for this migration; databases that already
-// have it skip it through IF NOT EXISTS / duplicate_object. Hand-written on purpose (no blueprint helpers)
+// have it skip it through IF NOT EXISTS / to_regtype checks. Hand-written on purpose (no blueprint helpers)
 // so later blueprint changes never alter history.
 export async function up(db: Kysely<any>): Promise<void> {
   // Sequelize named enum types enum_<table>_<column>; keep the name so existing databases match
-  await sql`DO $$ BEGIN
-    CREATE TYPE "enum_users_role" AS ENUM ('admin', 'sub-admin', 'member', 'guest');
-  EXCEPTION WHEN duplicate_object THEN NULL; END $$`.execute(db);
+  // Postgres has no CREATE TYPE IF NOT EXISTS; to_regtype resolves via search_path and is NULL when absent
+  const { rows } = await sql<{ type: string | null }>`SELECT to_regtype('enum_users_role') AS type`.execute(db);
+  if (!rows[0]?.type) {
+    await db.schema.createType('enum_users_role')
+      .asEnum(['admin', 'sub-admin', 'member', 'guest'])
+      .execute();
+  }
 
   await db.schema.createTable('users').ifNotExists()
     .addColumn('id', 'uuid', (col) => col.primaryKey().notNull())
