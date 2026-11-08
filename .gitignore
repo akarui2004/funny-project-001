@@ -163,3 +163,6 @@ config/.*.local.toml
 # Sublime Text local project files
 *.sublime-project
 *.sublime-workspace
+
+# Local planning files (kept on disk, not tracked)
+/plans/
