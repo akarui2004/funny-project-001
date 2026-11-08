@@ -1,5 +1,7 @@
 # Project Structure
 
+Shared helpers and utils are catalogued in [`../reference/helpers-and-utils.md`](../reference/helpers-and-utils.md).
+
 ## Directory Layout
 
 ```text
@@ -16,8 +18,11 @@
 │   ├── app/           # Runtime wiring: config + connections
 │   ├── constants/     # Static values (defaults, environments, logging)
 │   ├── db/            # migrations, blueprint helpers, Kysely migration runner
-│   └── utils/         # Logger, project-root resolver
-└── tests/             # Empty, no test runner configured yet
+│   ├── helpers/       # IP toolkit (ip-helper/, match-ip-rules)
+│   ├── http/          # createHttpApp, HttpError, middlewares
+│   ├── types/         # Shared types (branded integers, IP info)
+│   └── utils/         # Logger, getErrorMessage, getClientIp, numbers, project-root
+└── tests/             # node:test unit tests mirroring src/ (see docs/testing)
 ```
 
 ## Module Dependencies
