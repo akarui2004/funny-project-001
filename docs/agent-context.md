@@ -42,6 +42,8 @@ for implementation details.
 - Migration column conventions (`primaryKey`, `timestamps`, `softDelete`, `oneOf`, `nonNegative`): `src/db/migration-blueprint.ts`
 - Directory layout and module dependency diagram: [`docs/architecture/project-structure.md`](architecture/project-structure.md)
 - System, file, request, auth and data-model diagrams: [`docs/architecture/system-diagrams.md`](architecture/system-diagrams.md)
+- Catalog of existing helpers, utils, middlewares and error classes: [`docs/reference/helpers-and-utils.md`](reference/helpers-and-utils.md).
+  Check it before writing a new function; add new shared helpers to it.
 - Project root resolver (`.app_root` marker): `src/utils/resolve-project-root.ts`;
   import it directly, not via the `src/utils` barrel (circular with the logger)
 - Logging: `src/utils/logger.ts` and `src/constants/logging.ts`; use
