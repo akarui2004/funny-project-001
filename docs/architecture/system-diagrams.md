@@ -1,7 +1,7 @@
 # System Diagrams
 
 Visual map of the project: what exists today plus the target from
-[`plans/260930-2128-project-hardening-roadmap`](../../plans/260930-2128-project-hardening-roadmap/plan.md).
+the project hardening roadmap (kept in local, untracked `plans/`).
 Dashed shapes = planned (not in code yet). Solid = exists now.
 
 Source files are in `docs/architecture/diagrams/*.excalidraw`; open them at
