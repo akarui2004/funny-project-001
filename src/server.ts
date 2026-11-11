@@ -1,4 +1,5 @@
 import { Server } from 'http';
+import { sql } from 'kysely';
 import { appConfig, appDb, appRedis } from 'src/app';
 import { NODE_ENV } from 'src/constants';
 import { createHttpApp } from 'src/http/create-http-app';
@@ -25,7 +26,13 @@ const bootstrap = async () => {
   await appRedis.initialize('queue');
   await appDb.initialize('master');
 
-  const app = createHttpApp(appConfig.http);
+  const readiness = {
+    db: () => sql`select 1`.execute(appDb.getDb<Record<string, never>>()),
+    redis: () => appRedis.getClient('master').ping(),
+    queue: () => appRedis.getClient('queue').ping(),
+  };
+
+  const app = createHttpApp(appConfig.http, { readiness });
 
   const appPort = appConfig.env.port;
   httpServer = app.listen(appPort, () => {
