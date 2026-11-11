@@ -6,6 +6,11 @@ import type { THttpSchema } from 'src/app/config-loader/config.type';
 import { createModuleLogger } from 'src/utils';
 import { HttpError } from './errors/http-error';
 import { errorHandler, notFoundHandler, requestLogger } from './middlewares';
+import { createHealthRouter, type ReadinessChecks } from './routes';
+
+export interface HttpAppDependencies {
+  readiness: ReadinessChecks;
+}
 
 const logger = createModuleLogger('http');
 
@@ -14,7 +19,7 @@ const logger = createModuleLogger('http');
  * Middleware order is fixed: security -> parsing -> logging -> routes -> 404 -> errors.
  * Health and the api/ops/manager surfaces mount between the logger and the 404 handler.
  */
-export function createHttpApp(http: THttpSchema): Express {
+export function createHttpApp(http: THttpSchema, deps: HttpAppDependencies): Express {
   const app = express();
 
   // Which proxy hops may set X-Forwarded-For; see docs/setup/configuration.md ([http] trustProxy)
@@ -39,6 +44,9 @@ export function createHttpApp(http: THttpSchema): Express {
 
   app.use(express.json({ limit: http.jsonLimit }));
   app.use(requestLogger);
+
+  // Health route
+  app.use(createHealthRouter(deps.readiness));
 
   app.use(notFoundHandler);
   app.use(errorHandler);
