@@ -1,0 +1,118 @@
+Table tenants {
+  id uuid [not null, pk]
+  name text [not null, unique, note: "Tenant name"]
+  domain text [not null, unique, note: "Tenant domain"]
+  status tenant_status [not null, default: "active"]
+  createdAt datetime
+  updatedAt datetime
+}
+
+Dep: tenants -> entities
+
+Table entities {
+  id uuid [not null, pk]
+  tenantId uuid [not null, ref: > tenants.id]
+  actorId uuid [not null, unique]
+  actorType varchar(255) [not null]
+  isActive bool [null, default: true, note: "Active or Deactive"]
+  createdAt datetime
+  updatedAt datetime
+
+  indexes {
+    (tenantId, actorId, actorType) [unique]
+  }
+}
+
+Ref: entities.actorId - users.id
+Ref: entities.actorId - operators.id
+Ref: entities.actorId - managers.id
+
+Dep: users -> entities [note: "1 user per 1 entity with actorType is user"]
+Dep: operators -> entities [note: "1 operator per 1 entity with actorType is operator"]
+Dep: managers -> entities [note: "1 manager per 1 entity with actorType is manager"]
+
+Table users {
+  id uuid [not null, pk]
+  firstName text [not null, note: "First name"]
+  lastName text [null, note: "Last name"]
+  email text [not null, note: "email"]
+  mobile varchar(64) [not null]
+  homePhone varchar(64) [null]
+  address text [null]
+  dob date [null, note: "date of birth"]
+  bio text [null]
+  createdAt datetime
+  updatedAt datetime
+}
+
+Table operators {
+  id uuid [not null, pk]
+  fullName text [not null, note: "full name"]
+  email text [not null, note: "email"]
+  mobile varchar(64) [not null]
+  homePhone varchar(64) [null]
+  address text [not null]
+  dob date [null]
+  bio text [null]
+  createdAt datetime
+  updatedAt datetime
+}
+
+Table managers {
+  id uuid [not null, pk]
+  fullName text [not null, note: "full name"]
+  email text [not null, note: "email"]
+  mobile varchar(64) [not null]
+  homePhone varchar(64) [null]
+  address text [null]
+  dob date [null]
+  bio text [null]
+  createdAt datetime
+  updatedAt datetime
+}
+
+Dep: entities -> credentials
+
+Table credentials {
+  id uuid [not null, pk]
+  entityId uuid [not null, ref: > entities.id]
+  identifier varchar(255) [not null, note: "stand for username, email, key, ..."]
+  secret text [not null, note: "hash value"]
+  type credential_type [not null, default: "password"]
+  createdAt datetime
+  updatedAt datetime
+}
+
+Table roles {
+  id uuid [not null, pk]
+  name varchar(255) [not null]
+  code varchar(255) [not null]
+  createdAt datetime
+  updatedAt datetime
+
+  indexes {
+    (name, code) [unique]
+  }
+}
+
+Table permissions {
+  id uuid [not null, pk]
+  name varchar(255) [not null]
+  code varchar(255) [not null]
+  grantedAction json [not null, note: "a granted for a module (user) with action like create,update,delete"]
+  customGrantedAction json [null, note: "a custom granted action "]
+  createdAt datatime
+  updatedAt datetime
+}
+
+Enum credential_type {
+  password
+  oauth
+  public_key
+}
+
+Enum tenant_status {
+  active
+  deactive
+  suspend
+}

@@ -1,0 +1,143 @@
+{
+  "version": "4.0.0",
+  "darkMode": true,
+  "gridEnabling": false,
+  "currentViewName": null,
+  "defaultView": {
+    "detailLevel": "All",
+    "relationshipMode": "All",
+    "tablePositions": [
+      {
+        "name": "credentials",
+        "schemaName": "public",
+        "x": 363.68389642371886,
+        "y": 1082.6794897612576
+      },
+      {
+        "name": "tenants",
+        "schemaName": "public",
+        "x": 16,
+        "y": 16
+      },
+      {
+        "name": "entities",
+        "schemaName": "public",
+        "x": 346.1030691964286,
+        "y": 685.383347486413
+      },
+      {
+        "name": "users",
+        "schemaName": "public",
+        "x": 976,
+        "y": 16
+      },
+      {
+        "name": "operators",
+        "schemaName": "public",
+        "x": 976,
+        "y": 440
+      },
+      {
+        "name": "managers",
+        "schemaName": "public",
+        "x": 976,
+        "y": 840
+      },
+      {
+        "name": "roles",
+        "schemaName": "public",
+        "x": 16,
+        "y": 1388.6794897612576
+      },
+      {
+        "name": "permissions",
+        "schemaName": "public",
+        "x": 374.2231863839286,
+        "y": 1497.786521610466
+      }
+    ],
+    "tableGroupCollapseStates": [],
+    "stickyNoteLayouts": [],
+    "referencePaths": [
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "tenants",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "tenantId"
+        ],
+        "secondTableName": "entities",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "entities",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "entityId"
+        ],
+        "secondTableName": "credentials",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "actorId"
+        ],
+        "firstTableName": "entities",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "users",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "actorId"
+        ],
+        "firstTableName": "entities",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "operators",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "actorId"
+        ],
+        "firstTableName": "entities",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "managers",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      }
+    ],
+    "elementPositions": [],
+    "groupCollapseStates": [],
+    "linkPaths": []
+  },
+  "views": {}
+}
