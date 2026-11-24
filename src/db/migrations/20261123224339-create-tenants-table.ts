@@ -9,7 +9,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .asEnum(['active', 'deactive', 'suspended'])
     .execute();
 
-  await db.schema.createTable('tenants')
+  await db.schema.createTable('tenants').ifNotExists()
     .$call(primaryKey)
     .addColumn('code', 'varchar(2048)', (col) => col.notNull().unique())
     .addColumn('name', 'varchar(1024)', (col) => col.notNull())
@@ -30,21 +30,21 @@ export async function up(db: Kysely<any>): Promise<void> {
     .column('status')
     .execute();
 
-  await db.schema.createTable('tenant_domains')
+  await db.schema.createTable('tenant_domains').ifNotExists()
     .$call(primaryKey)
-    .addColumn('tenant_id', 'uuid', (col) => col.references('tenants.id').onDelete('cascade').notNull())
+    .addColumn('tenantId', 'uuid', (col) => col.references('tenants.id').onDelete('cascade').notNull())
     .addColumn('domain', 'varchar(1024)', (col) => col.notNull())
     .addColumn('isPrimary', 'boolean', (col) => col.notNull().defaultTo(false))
     .addColumn('isVerified', 'boolean', (col) => col.notNull().defaultTo(false))
-    .addUniqueConstraint('uniq_domain_wtenant', ['tenant_id', 'domain'])
+    .addUniqueConstraint('uniq_domain_wtenant', ['tenantId', 'domain'])
     .$call(softDelete)
     .$call(timestamps)
     .execute();
 
   await db.schema
-    .createIndex('idx_tenant_domains_tenant_id')
+    .createIndex('idx_tenant_domains_tenantId')
     .on('tenant_domains')
-    .column('tenant_id')
+    .column('tenantId')
     .execute();
 
   await db.schema
