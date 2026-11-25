@@ -3,6 +3,7 @@ import { sql } from 'kysely';
 import { appConfig, appDb, appRedis } from 'src/app';
 import { NODE_ENV } from 'src/constants';
 import { createHttpApp } from 'src/http/create-http-app';
+import { listRoutes } from 'src/http/route-listing';
 import { logger } from './utils';
 
 let httpServer: Server | null = null;
@@ -34,9 +35,13 @@ const bootstrap = async () => {
 
   const app = createHttpApp(appConfig.http, { readiness });
 
+  const routes = listRoutes(app);
+
   const appPort = appConfig.env.port;
   httpServer = app.listen(appPort, () => {
     logger.info(`Server running at port: ${appPort}`);
+    // List all route in the application
+    logger.info(`Routes:\n${routes.join('\n')}`);
   });
 };
 

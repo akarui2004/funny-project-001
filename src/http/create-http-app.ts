@@ -7,6 +7,7 @@ import { createModuleLogger } from 'src/utils';
 import { HttpError } from './errors/http-error';
 import { errorHandler, notFoundHandler, requestLogger } from './middlewares';
 import { createHealthRouter, type ReadinessChecks } from './routes';
+import { mountRouter } from 'src/http/route-listing';
 
 export interface HttpAppDependencies {
   readiness: ReadinessChecks;
@@ -46,7 +47,7 @@ export function createHttpApp(http: THttpSchema, deps: HttpAppDependencies): Exp
   app.use(requestLogger);
 
   // Health route
-  app.use(createHealthRouter(deps.readiness));
+  mountRouter(app, '/', createHealthRouter(deps.readiness));
 
   app.use(notFoundHandler);
   app.use(errorHandler);
