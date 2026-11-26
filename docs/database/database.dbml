@@ -1,0 +1,217 @@
+Table tenants {
+  id uuid [not null, pk]
+  code varchar(2048) [not null, unique, note: "Internal unique code"]
+  name varchar(1024) [not null, note: "Tenant display name"]
+  status tenant_status [not null, default: "active"]
+  createdAt datetime
+  updatedAt datetime
+
+  indexes {
+    (name) [name: "idx_tenant_name"]
+    (status) [name: "idx_tenant_status"]
+  }
+}
+
+Table tenant_domains {
+  id uuid [not null, pk]
+  tenantId uuid [not null, ref: > tenants.id]
+  domain varchar(1024) [not null]
+  isPrimary bool [null, default: false]
+  isVerified bool [null, default: false]
+  createdAt datetime
+  updatedAt datetime
+
+  indexes {
+    (domain) [name: "idx_td_domain"]
+    (tenantId, domain) [unique]
+  }
+}
+
+// Dep: tenants -> entities
+
+Table entities {
+  id uuid [not null, pk]
+  tenantId uuid [not null, ref: > tenants.id]
+  actorType varchar(255) [not null]
+  actorId uuid [not null, unique]
+  isActive bool [null, default: true, note: "Active or Deactive"]
+  createdAt datetime
+  updatedAt datetime
+
+  indexes {
+    (tenantId, actorId, actorType) [unique]
+  }
+}
+
+Ref: entities.actorId - users.id
+Ref: entities.actorId - operators.id
+Ref: entities.actorId - managers.id
+
+// Dep: users -> entities [note: "1 user per 1 entity with actorType is user"]
+// Dep: operators -> entities [note: "1 operator per 1 entity with actorType is operator"]
+// Dep: managers -> entities [note: "1 manager per 1 entity with actorType is manager"]
+
+Table entity_roles {
+  id uuid [not null, pk]
+  entityId uuid [not null, ref: > entities.id]
+  tenantId uuid [not null, ref: > tenants.id, note: "Optional, but added to keep things clean and clear."]
+  roleId uuid [not null, ref: > roles.id]
+  createdBy uuid [not null, ref: > entities.id, note: "Who create this?"]
+  updatedBy uuid [not null, ref: > entities.id, note: "Who modify this?"]
+  createdAt datetime
+  updatedAt datetime
+
+  indexes {
+    (entityId, roleId) [unique]
+  }
+}
+
+Table entity_permissions {
+  id uuid [not null, pk]
+  entityId uuid [not null, ref: > entities.id]
+  permissionId uuid [not null, ref: > permissions.id]
+  tenantId uuid [not null, ref: > tenants.id]
+  effect entity_permission_effect [not null]
+  reason text [not null]
+  createdBy uuid [not null, ref: > entities.id, note: "Who create this?"]
+  updatedBy uuid [not null, ref: > entities.id, note: "Who modify this?"]
+  createdAt datetime
+  updatedAt datetime
+
+  indexes {
+    (entityId, permissionId) [unique]
+    (entityId, effect) [name: "idx_ent_perm_effect"]
+  }
+}
+
+Enum entity_permission_effect {
+  allow
+  deny
+}
+
+Table users {
+  id uuid [not null, pk]
+  firstName text [not null, note: "First name"]
+  lastName text [null, note: "Last name"]
+  email text [not null, note: "email"]
+  mobile varchar(64) [not null]
+  homePhone varchar(64) [null]
+  address text [null]
+  dob date [null, note: "date of birth"]
+  bio text [null]
+  createdAt datetime
+  updatedAt datetime
+
+  indexes {
+    (email) [name: "idx_email"]
+    (mobile) [name: "idx_mobile"]
+    (firstName, lastName) [name: "idx_fName_lName"]
+  }
+}
+
+Table operators {
+  id uuid [not null, pk]
+  fullName text [not null, note: "full name"]
+  email text [not null, note: "email"]
+  mobile varchar(64) [not null]
+  homePhone varchar(64) [null]
+  address text [not null]
+  dob date [null]
+  bio text [null]
+  createdAt datetime
+  updatedAt datetime
+
+  indexes {
+    (email) [name: "idx_ops_email"]
+    (mobile) [name: "idx_ops_mobile"]
+    (fullName) [name: "idx_ops_flName"]
+  }
+}
+
+Table managers {
+  id uuid [not null, pk]
+  fullName text [not null, note: "full name"]
+  email text [not null, note: "email"]
+  mobile varchar(64) [not null]
+  homePhone varchar(64) [null]
+  address text [null]
+  dob date [null]
+  bio text [null]
+  createdAt datetime
+  updatedAt datetime
+
+    indexes {
+    (email) [name: "idx_manage_email"]
+    (mobile) [name: "idx_manage_mobile"]
+    (fullName) [name: "idx_manage_flName"]
+  }
+}
+
+// Dep: entities -> credentials
+
+Table credentials {
+  id uuid [not null, pk]
+  entityId uuid [not null, ref: > entities.id]
+  identifier varchar(255) [not null, note: "stand for username, email, key, ..."]
+  secret text [not null, note: "hash value"]
+  type credential_type [not null, default: "password"]
+  createdAt datetime
+  updatedAt datetime
+}
+
+// Required pattern for tenantId and isSystem, we only have 2 cases:
+// tenantId is null with isSystem true -> system role
+// tenantId has value with isSystem false -> tenant role
+Table roles {
+  id uuid [not null, pk]
+  tenantId uuid [null, ref: >? tenants.id, note: "when tenantId is null, this is the system role"]
+  name varchar(255) [not null]
+  code varchar(255) [not null]
+  description text [null]
+  isSystem bool [null, default: false, note: "isSystem is true when tenantId is null - this is required"]
+  createdAt datetime
+  updatedAt datetime
+
+  indexes {
+    (name, code) [unique]
+  }
+}
+
+Table permissions {
+  id uuid [not null, pk]
+  name varchar(255) [not null]
+  code varchar(255) [not null, note: "order:read, order:approve, billing:reads"]
+  resource varchar(255) [not null, note: "order, billing, entity"]
+  action varchar(255) [not null, note: "read, approve, manage"]
+  description text [null]
+  createdAt datatime
+  updatedAt datetime
+
+  indexes {
+    (name, code) [unique]
+  }
+}
+
+Table role_permissions {
+  id uuid [not null, pk]
+  roleId uuid [not null, ref: > roles.id]
+  permissionId uuid [not null, ref: > permissions.id]
+  createdAt datetime
+  updatedAt datetime
+
+  indexes {
+    (roleId, permissionId) [unique]
+  }
+}
+
+Enum credential_type {
+  password
+  oauth
+  public_key
+}
+
+Enum tenant_status {
+  active
+  deactive
+  suspend
+}

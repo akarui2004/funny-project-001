@@ -1,0 +1,377 @@
+{
+  "version": "4.0.0",
+  "darkMode": true,
+  "gridEnabling": false,
+  "currentViewName": null,
+  "defaultView": {
+    "detailLevel": "All",
+    "relationshipMode": "All",
+    "tablePositions": [
+      {
+        "name": "credentials",
+        "schemaName": "public",
+        "x": 1056,
+        "y": 344
+      },
+      {
+        "name": "tenants",
+        "schemaName": "public",
+        "x": 16,
+        "y": 16
+      },
+      {
+        "name": "entities",
+        "schemaName": "public",
+        "x": 512,
+        "y": 352
+      },
+      {
+        "name": "users",
+        "schemaName": "public",
+        "x": 1056,
+        "y": 1048
+      },
+      {
+        "name": "operators",
+        "schemaName": "public",
+        "x": 1056,
+        "y": 1480
+      },
+      {
+        "name": "managers",
+        "schemaName": "public",
+        "x": 1056,
+        "y": 1872
+      },
+      {
+        "name": "roles",
+        "schemaName": "public",
+        "x": 512,
+        "y": 656
+      },
+      {
+        "name": "permissions",
+        "schemaName": "public",
+        "x": 16,
+        "y": 280
+      },
+      {
+        "name": "role_permissions",
+        "schemaName": "public",
+        "x": 1056,
+        "y": 2272
+      },
+      {
+        "name": "entity_roles",
+        "schemaName": "public",
+        "x": 1056,
+        "y": 16
+      },
+      {
+        "name": "entity_permissions",
+        "schemaName": "public",
+        "x": 1056,
+        "y": 648
+      },
+      {
+        "name": "tenant_domains",
+        "schemaName": "public",
+        "x": 512,
+        "y": 56
+      }
+    ],
+    "tableGroupCollapseStates": [],
+    "stickyNoteLayouts": [],
+    "referencePaths": [
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "tenants",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "tenantId"
+        ],
+        "secondTableName": "entities",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "entities",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "entityId"
+        ],
+        "secondTableName": "credentials",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "actorId"
+        ],
+        "firstTableName": "entities",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "users",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "actorId"
+        ],
+        "firstTableName": "entities",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "operators",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "actorId"
+        ],
+        "firstTableName": "entities",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "id"
+        ],
+        "secondTableName": "managers",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "tenants",
+        "firstSchemaName": "public",
+        "firstRelation": "0..1",
+        "secondFieldNames": [
+          "tenantId"
+        ],
+        "secondTableName": "roles",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "roles",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "roleId"
+        ],
+        "secondTableName": "role_permissions",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "permissions",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "permissionId"
+        ],
+        "secondTableName": "role_permissions",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "entities",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "entityId"
+        ],
+        "secondTableName": "entity_roles",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "roles",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "roleId"
+        ],
+        "secondTableName": "entity_roles",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "entities",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "createdBy"
+        ],
+        "secondTableName": "entity_roles",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "tenants",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "tenantId"
+        ],
+        "secondTableName": "tenant_domains",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "entities",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "entityId"
+        ],
+        "secondTableName": "entity_permissions",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "permissions",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "permissionId"
+        ],
+        "secondTableName": "entity_permissions",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "tenants",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "tenantId"
+        ],
+        "secondTableName": "entity_permissions",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "tenants",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "tenantId"
+        ],
+        "secondTableName": "entity_roles",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "entities",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "createdBy"
+        ],
+        "secondTableName": "entity_permissions",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "entities",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "updatedBy"
+        ],
+        "secondTableName": "entity_roles",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "id"
+        ],
+        "firstTableName": "entities",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "updatedBy"
+        ],
+        "secondTableName": "entity_permissions",
+        "secondSchemaName": "public",
+        "secondRelation": "*",
+        "checkPoints": []
+      }
+    ],
+    "elementPositions": [],
+    "groupCollapseStates": [],
+    "linkPaths": []
+  },
+  "views": {}
+}
